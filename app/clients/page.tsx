@@ -2,17 +2,26 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 async function getClients() {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching clients:', error);
+    if (error) {
+      console.error('Error fetching clients:', error);
+      return [];
+    }
+
+    // Ensure status field exists, default to 'lead' if not
+    return (data || []).map(client => ({
+      ...client,
+      status: client.status || 'lead'
+    }));
+  } catch (error) {
+    console.error('Error in getClients:', error);
     return [];
   }
-
-  return data || [];
 }
 
 export default async function ClientsPage() {

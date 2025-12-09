@@ -10,7 +10,13 @@ async function getDashboardStats() {
     // Get clients by status
     const { data: allClients } = await supabase
       .from('clients')
-      .select('status');
+      .select('*');
+    
+    // Ensure status field exists
+    const clientsWithStatus = (allClients || []).map(c => ({
+      ...c,
+      status: c.status || 'lead'
+    }));
 
     // Get total videos
     const { count: videosCount } = await supabase
@@ -36,11 +42,11 @@ async function getDashboardStats() {
       .select('*', { count: 'exact', head: true });
 
     const statusBreakdown = {
-      lead: allClients?.filter(c => c.status === 'lead').length || 0,
-      prospect: allClients?.filter(c => c.status === 'prospect').length || 0,
-      active: allClients?.filter(c => c.status === 'active').length || 0,
-      inactive: allClients?.filter(c => c.status === 'inactive').length || 0,
-      completed: allClients?.filter(c => c.status === 'completed').length || 0,
+      lead: clientsWithStatus.filter(c => c.status === 'lead').length,
+      prospect: clientsWithStatus.filter(c => c.status === 'prospect').length,
+      active: clientsWithStatus.filter(c => c.status === 'active').length,
+      inactive: clientsWithStatus.filter(c => c.status === 'inactive').length,
+      completed: clientsWithStatus.filter(c => c.status === 'completed').length,
     };
 
     return {

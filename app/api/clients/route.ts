@@ -9,6 +9,7 @@ const ClientSchema = z.object({
   ig_handle: z.string().optional(),
   weekly_content_capacity: z.number().int().positive().default(3),
   positioning: z.string().optional(),
+  status: z.enum(['lead', 'prospect', 'active', 'inactive', 'completed']).default('lead'),
 });
 
 export async function POST(request: NextRequest) {
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest) {
         ig_handle: validatedData.ig_handle || null,
         weekly_content_capacity: validatedData.weekly_content_capacity,
         positioning: validatedData.positioning || null,
+        status: validatedData.status,
       })
       .select()
       .single();
