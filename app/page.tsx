@@ -1,4 +1,54 @@
-export default function Home() {
+import { supabase } from '@/lib/supabase';
+
+async function getDashboardStats() {
+  try {
+    // Get total clients
+    const { count: clientsCount } = await supabase
+      .from('clients')
+      .select('*', { count: 'exact', head: true });
+
+    // Get total videos
+    const { count: videosCount } = await supabase
+      .from('videos')
+      .select('*', { count: 'exact', head: true });
+
+    // Get average score
+    const { data: scores } = await supabase
+      .from('video_scores')
+      .select('hook_score, tempo_score, clarity_score, cta_score, visual_score');
+
+    let avgScore = 0;
+    if (scores && scores.length > 0) {
+      const totalScore = scores.reduce((sum, score) => {
+        return sum + (score.hook_score + score.tempo_score + score.clarity_score + score.cta_score + score.visual_score) / 5;
+      }, 0);
+      avgScore = totalScore / scores.length;
+    }
+
+    // Get total hashtags
+    const { count: hashtagsCount } = await supabase
+      .from('hashtag_stats')
+      .select('*', { count: 'exact', head: true });
+
+    return {
+      clients: clientsCount || 0,
+      videos: videosCount || 0,
+      avgScore: avgScore.toFixed(1),
+      hashtags: hashtagsCount || 0,
+    };
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    return {
+      clients: 0,
+      videos: 0,
+      avgScore: '0.0',
+      hashtags: 0,
+    };
+  }
+}
+
+export default async function Home() {
+  const stats = await getDashboardStats();
   return (
     <div className="p-8">
       {/* Page Header */}
@@ -13,7 +63,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Toplam Müşteri</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">0</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.clients}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <span className="text-2xl">👥</span>
@@ -25,7 +75,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Toplam Video</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">0</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.videos}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <span className="text-2xl">🎥</span>
@@ -37,7 +87,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Ort. Skor</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">-</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.avgScore}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <span className="text-2xl">⭐</span>
@@ -49,7 +99,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Aktif Hashtag</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">0</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.hashtags}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <span className="text-2xl">#️⃣</span>
