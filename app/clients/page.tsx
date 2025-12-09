@@ -33,6 +33,31 @@ export default async function ClientsPage() {
         </Link>
       </div>
 
+      {/* Status Filter */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-gray-700">Filtrele:</span>
+          <button className="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium hover:bg-blue-200">
+            Tümü ({clients.length})
+          </button>
+          <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">
+            🔵 Lead ({clients.filter((c: any) => c.status === 'lead').length})
+          </button>
+          <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">
+            🟡 Prospect ({clients.filter((c: any) => c.status === 'prospect').length})
+          </button>
+          <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">
+            🟢 Active ({clients.filter((c: any) => c.status === 'active').length})
+          </button>
+          <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">
+            ⚪ Inactive ({clients.filter((c: any) => c.status === 'inactive').length})
+          </button>
+          <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">
+            ✅ Completed ({clients.filter((c: any) => c.status === 'completed').length})
+          </button>
+        </div>
+      </div>
+
       {/* Clients List or Empty State */}
       {clients.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
@@ -54,6 +79,9 @@ export default async function ClientsPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Durum
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Müşteri
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -74,8 +102,23 @@ export default async function ClientsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {clients.map((client: any) => (
+              {clients.map((client: any) => {
+                const statusConfig = {
+                  lead: { emoji: '🔵', label: 'Lead', color: 'bg-blue-100 text-blue-800' },
+                  prospect: { emoji: '🟡', label: 'Prospect', color: 'bg-yellow-100 text-yellow-800' },
+                  active: { emoji: '🟢', label: 'Active', color: 'bg-green-100 text-green-800' },
+                  inactive: { emoji: '⚪', label: 'Inactive', color: 'bg-gray-100 text-gray-800' },
+                  completed: { emoji: '✅', label: 'Completed', color: 'bg-purple-100 text-purple-800' },
+                };
+                const status = statusConfig[client.status as keyof typeof statusConfig] || statusConfig.lead;
+                
+                return (
                 <tr key={client.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${status.color}`}>
+                      {status.emoji} {status.label}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{client.name}</div>
                   </td>
@@ -103,7 +146,8 @@ export default async function ClientsPage() {
                     </span>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

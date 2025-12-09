@@ -7,6 +7,11 @@ async function getDashboardStats() {
       .from('clients')
       .select('*', { count: 'exact', head: true });
 
+    // Get clients by status
+    const { data: allClients } = await supabase
+      .from('clients')
+      .select('status');
+
     // Get total videos
     const { count: videosCount } = await supabase
       .from('videos')
@@ -30,11 +35,20 @@ async function getDashboardStats() {
       .from('hashtag_stats')
       .select('*', { count: 'exact', head: true });
 
+    const statusBreakdown = {
+      lead: allClients?.filter(c => c.status === 'lead').length || 0,
+      prospect: allClients?.filter(c => c.status === 'prospect').length || 0,
+      active: allClients?.filter(c => c.status === 'active').length || 0,
+      inactive: allClients?.filter(c => c.status === 'inactive').length || 0,
+      completed: allClients?.filter(c => c.status === 'completed').length || 0,
+    };
+
     return {
       clients: clientsCount || 0,
       videos: videosCount || 0,
       avgScore: avgScore.toFixed(1),
       hashtags: hashtagsCount || 0,
+      statusBreakdown,
     };
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
@@ -43,6 +57,7 @@ async function getDashboardStats() {
       videos: 0,
       avgScore: '0.0',
       hashtags: 0,
+      statusBreakdown: { lead: 0, prospect: 0, active: 0, inactive: 0, completed: 0 },
     };
   }
 }
@@ -169,6 +184,38 @@ export default async function Home() {
             <code className="text-xs bg-gray-100 px-2 py-1 rounded">
               POST /api/growth-report
             </code>
+          </div>
+        </div>
+      </div>
+
+      {/* Client Status Breakdown */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Müşteri Durumu</h2>
+        <div className="grid grid-cols-5 gap-4">
+          <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="text-3xl mb-2">🔵</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.lead}</div>
+            <div className="text-sm text-gray-600">Lead</div>
+          </div>
+          <div className="text-center p-4 bg-yellow-50 rounded-lg">
+            <div className="text-3xl mb-2">🟡</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.prospect}</div>
+            <div className="text-sm text-gray-600">Prospect</div>
+          </div>
+          <div className="text-center p-4 bg-green-50 rounded-lg">
+            <div className="text-3xl mb-2">🟢</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.active}</div>
+            <div className="text-sm text-gray-600">Active</div>
+          </div>
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            <div className="text-3xl mb-2">⚪</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.inactive}</div>
+            <div className="text-sm text-gray-600">Inactive</div>
+          </div>
+          <div className="text-center p-4 bg-purple-50 rounded-lg">
+            <div className="text-3xl mb-2">✅</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.completed}</div>
+            <div className="text-sm text-gray-600">Completed</div>
           </div>
         </div>
       </div>

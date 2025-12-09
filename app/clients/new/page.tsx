@@ -13,6 +13,7 @@ export default function NewClientPage() {
     ig_handle: '',
     weekly_content_capacity: 3,
     positioning: 'mid',
+    status: 'lead',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,6 +132,26 @@ export default function NewClientPage() {
               <option value="mid">Mid (Orta Segment)</option>
               <option value="economic">Economic (Ekonomik)</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Müşteri Durumu
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="lead">🔵 Lead - Potansiyel Müşteri</option>
+              <option value="prospect">🟡 Prospect - Görüşülen Müşteri</option>
+              <option value="active">🟢 Active - Aktif Çalışılan</option>
+              <option value="inactive">⚪ Inactive - Pasif</option>
+              <option value="completed">✅ Completed - Tamamlanmış</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Lead: İlk temas • Prospect: Görüşme yapıldı • Active: Anlaşma var
+            </p>
           </div>
 
           {/* Buttons */}
