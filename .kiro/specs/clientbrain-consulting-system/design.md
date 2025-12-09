@@ -487,3 +487,311 @@ platform ∈ {instagram, tiktok, youtube}
 funnel_stage ∈ {cold, warm, hot, sale}
 
 Tüm skorlar 0–10 arası smallint olarak validate edilir
+
+
+---
+
+## 6. Müşteri Yönetimi ve Durum Takibi
+
+### 6.1. Müşteri Durum Sistemi
+
+**Amaç:**
+- Her müşterinin iş akışındaki konumunu takip etmek
+- Potansiyel müşterilerden aktif müşterilere kadar tüm süreci yönetmek
+
+**Status Değerleri:**
+
+- `lead` 🔵 - Potansiyel müşteri (ilk temas)
+- `prospect` 🟡 - Görüşülen müşteri (intake form doldurulmuş)
+- `active` 🟢 - Aktif çalışılan müşteri (anlaşma yapılmış)
+- `inactive` ⚪ - Pasif müşteri (çalışma durmuş)
+- `completed` ✅ - Tamamlanmış müşteri (proje bitmiş)
+
+**Database Değişikliği:**
+```sql
+ALTER TABLE clients ADD COLUMN status text NOT NULL DEFAULT 'lead' 
+CHECK (status IN ('lead', 'prospect', 'active', 'inactive', 'completed'));
+```
+
+---
+
+### 6.2. Müşteri Görüşme Formu (`client_intake_forms`)
+
+**Amaç:**
+- İlk görüşmede detaylı bilgi toplamak
+- AI analizi için veri kaynağı oluşturmak
+
+**Kolonlar:**
+
+**A) Temel Bilgiler:**
+- `business_name` (text)
+- `location` (text)
+- `sector` (text)
+- `target_audience` (text)
+- `price_segment` (text) – luxury / mid / economic
+- `social_media_accounts` (jsonb) – {instagram, tiktok, youtube}
+
+**B) Hedefler:**
+- `three_month_goals` (text)
+- `one_year_goals` (text)
+
+**C) Ana Sorunlar:**
+- `main_challenges` (text)
+- `previous_agency_experience` (text)
+
+**D) İçerik Alışkanlıkları:**
+- `active_platforms` (text[])
+- `camera_comfort_level` (text) – low / medium / high
+- `weekly_content_capacity` (integer)
+- `best_performing_video_link` (text)
+- `best_performing_video_reason` (text)
+- `content_production_bottleneck` (text)
+
+**E) Konumlandırma:**
+- `desired_persona` (text)
+- `competitive_advantage` (text)
+- `desired_tone` (text)
+
+**F) Operasyonel Kısıtlar:**
+- `daily_time_commitment` (text)
+- `team_support` (text)
+- `budget` (text)
+
+**Mevcut Durum Röntgeni:**
+- `current_followers` (jsonb)
+- `last_30_days_performance` (text)
+- `content_frequency` (text)
+- `most_viewed_video` (text)
+- `video_quality_self_assessment` (text)
+- `used_hashtags` (text[])
+- `competitors` (text[])
+- `why_competitors_strong` (text)
+- `self_positioning` (text)
+- `swot_analysis` (jsonb) – {strengths, weaknesses, opportunities, threats}
+
+---
+
+### 6.3. AI Müşteri Analizi (`client_analysis`)
+
+**Amaç:**
+- Görüşme formundan AI destekli analiz üretmek
+- Müşteriye sunulacak profesyonel rapor oluşturmak
+
+**Kolonlar:**
+
+**1) Profesyonel Analiz:**
+- `current_level_assessment` (text) – Mevcut seviye değerlendirmesi
+- `main_bottlenecks` (text[]) – Ana darboğazlar
+- `strategic_mistakes` (text[]) – Stratejik hatalar
+- `strengths` (text[]) – Güçlü yanlar
+- `weaknesses` (text[]) – Zayıf yanlar
+- `realistic_growth_potential` (text) – Gerçekçi büyüme potansiyeli
+
+**2) AI Profil Kartı:**
+- `profile_summary` (text) – Profil özeti
+- `positioning_statement` (text) – Konumlandırma cümlesi
+- `target_audience_definition` (text) – Hedef kitle tanımı
+- `content_strategy` (text) – İçerik stratejisi
+- `opportunities` (text[]) – Fırsatlar
+- `risks` (text[]) – Riskler
+- `three_month_roadmap` (text) – 3 aylık yol haritası
+
+**3) Gelişim Planı:**
+- `first_30_days_plan` (jsonb) – {video_count, categories, tone, themes, performance_targets}
+- `first_90_days_plan` (jsonb) – {video_count, categories, milestones}
+
+**4) İlk Dokunuş Raporu:**
+- `initial_report` (text) – Markdown formatında detaylı rapor (müşteriye sunulacak)
+
+**5) Teknik Röntgen:**
+- `technical_assessment` (jsonb) – {content_quality, consistency, technical_gaps, strategic_gaps}
+
+---
+
+### 6.4. AI Analiz Prompt
+
+**System Prompt:**
+```
+Sen profesyonel bir sosyal medya danışmanısın. Emlak, gelinlik, wellness gibi sektörlerde uzmanlaşmışsın.
+
+Müşteri görüşme formunu analiz edip şunları üreteceksin:
+1. Profesyonel analiz (mevcut seviye, darboğazlar, stratejik hatalar, güçlü/zayıf yanlar)
+2. AI profil kartı (özet, konumlandırma, hedef kitle, strateji, fırsatlar, riskler)
+3. Gelişim planı (30 gün + 90 gün detaylı plan)
+4. İlk dokunuş raporu (müşteriye sunulacak profesyonel rapor)
+
+Türkçe, net, uygulanabilir ve motivasyonel bir dil kullan.
+JSON formatında yanıt ver.
+```
+
+**Model:** GPT-4o (daha detaylı analiz için)
+
+---
+
+## 7. API Endpoints - Müşteri Yönetimi
+
+### 7.1. `POST /api/clients`
+
+**Amaç:** Yeni müşteri oluşturmak
+
+**Request:**
+```json
+{
+  "name": "Ahmet Yılmaz",
+  "sector": "Emlak",
+  "city": "İstanbul",
+  "ig_handle": "@ahmetmlak",
+  "weekly_content_capacity": 3,
+  "positioning": "mid",
+  "status": "lead"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "name": "Ahmet Yılmaz",
+  "status": "lead",
+  ...
+}
+```
+
+---
+
+### 7.2. `GET /api/clients`
+
+**Amaç:** Tüm müşterileri listelemek
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Ahmet Yılmaz",
+    "sector": "Emlak",
+    "status": "lead",
+    ...
+  }
+]
+```
+
+---
+
+### 7.3. `POST /api/clients/[id]/intake`
+
+**Amaç:** Müşteri görüşme formunu kaydetmek ve AI analizi oluşturmak
+
+**Request:** Görüşme formu verileri (tüm alanlar)
+
+**Response:**
+```json
+{
+  "intake_form": { ... },
+  "analysis": {
+    "profile_summary": "...",
+    "positioning_statement": "...",
+    "strengths": [...],
+    "weaknesses": [...],
+    "first_30_days_plan": { ... },
+    "initial_report": "..."
+  }
+}
+```
+
+**İşlem Akışı:**
+1. Intake form kaydedilir
+2. Client bilgileri + intake form → AI'ya gönderilir
+3. AI analizi üretilir
+4. Analysis kaydedilir
+5. Client status → `prospect` olarak güncellenir
+6. Response döndürülür
+
+---
+
+## 8. UI Sayfaları
+
+### 8.1. Dashboard (`/`)
+- Toplam müşteri, video, skor, hashtag istatistikleri
+- Müşteri durum breakdown (Lead, Prospect, Active, Inactive, Completed)
+- API durum kartları
+- Teknoloji stack gösterimi
+
+### 8.2. Müşteriler (`/clients`)
+- Müşteri listesi (tablo görünümü)
+- Status filtreleme
+- Müşteri ekleme butonu
+- Tıklanabilir satırlar (detay sayfasına gider)
+
+### 8.3. Yeni Müşteri (`/clients/new`)
+- Müşteri bilgileri formu
+- Status seçimi
+- Kaydet/İptal butonları
+
+### 8.4. Müşteri Detay (`/clients/[id]`)
+- Müşteri bilgileri ve status
+- İstatistikler (video sayısı, kapasite, vb.)
+- AI profil özeti (varsa)
+- Güçlü yanlar / Gelişim alanları
+- Görüşme formu doldurma linki
+- Hızlı işlemler (Videolar, Analitik, Hashtag'ler)
+
+### 8.5. Görüşme Formu (`/clients/[id]/intake`)
+- Çok adımlı form (6 adım)
+- A) Temel Bilgiler
+- B) Hedefler
+- C) Ana Sorunlar
+- D) İçerik Alışkanlıkları
+- E) Konumlandırma
+- F) Operasyonel Kısıtlar
+- Kaydet → AI analizi oluştur
+
+### 8.6. Videolar (`/videos`)
+- Video listesi
+- Filtreler (müşteri, platform, tarih)
+- Video analizi yapma butonu
+
+### 8.7. Analitik (`/analytics`)
+- Tarih aralığı seçici
+- KPI kartları
+- Grafikler (placeholder)
+
+### 8.8. Hashtag'ler (`/hashtags`)
+- Müşteri filtresi
+- En iyi hashtag'ler
+- Zayıf hashtag'ler
+- Tüm hashtag'ler tablosu
+
+### 8.9. Ayarlar (`/settings`)
+- API yapılandırması
+- Model ayarları
+- Sistem bilgisi
+
+---
+
+## 9. Veri Akışı - Müşteri Yönetimi
+
+### 9.1. Yeni Müşteri Ekleme
+```
+User → /clients/new → Form doldur → POST /api/clients → 
+Database (clients) → Response → /clients (liste)
+```
+
+### 9.2. Görüşme Formu ve AI Analizi
+```
+User → /clients/[id] → "Görüşme Formu Doldur" → 
+/clients/[id]/intake → Form doldur → 
+POST /api/clients/[id]/intake → 
+1. Save intake_form
+2. Call AI (GPT-4o)
+3. Save analysis
+4. Update client.status = 'prospect'
+→ Response → /clients/[id] (detay sayfası)
+```
+
+### 9.3. Müşteri Detay Görüntüleme
+```
+User → /clients → Click row → /clients/[id] →
+Fetch: client + intake_form + analysis + video_count →
+Render: Profile card + Stats + Analysis
+```
