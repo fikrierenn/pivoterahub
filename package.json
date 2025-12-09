@@ -1,0 +1,35 @@
+{
+  "name": "pivoterahub",
+  "version": "1.0.0",
+  "description": "ClientBrain, dijital danışmanlık süreçlerini ölçeklenebilir, hafızalı ve video-odaklı bir AI sistemi ile otomatikleştiren bir platformdur. Her müşteri için ayrı hafıza tutan, videoları analiz eden, funnel oluşturan ve danışmanlık süreçlerini sistematik hale getiren kişisel danışmanlık beyni olarak tasarlanmıştır.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fikrierenn/pivoterahub.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/fikrierenn/pivoterahub/issues"
+  },
+  "homepage": "https://github.com/fikrierenn/pivoterahub#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.87.0",
+    "@types/node": "^24.10.2",
+    "@types/react": "^19.2.7",
+    "next": "^16.0.8",
+    "openai": "^6.10.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "typescript": "^5.9.3",
+    "zod": "^4.1.13"
+  }
+}
