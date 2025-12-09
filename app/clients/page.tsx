@@ -113,14 +113,14 @@ export default async function ClientsPage() {
                 const status = statusConfig[client.status as keyof typeof statusConfig] || statusConfig.lead;
                 
                 return (
-                <tr key={client.id} className="hover:bg-gray-50">
+                <tr key={client.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/clients/${client.id}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded ${status.color}`}>
                       {status.emoji} {status.label}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">{client.name}</div>
+                    <div className="font-medium text-blue-600 hover:text-blue-800">{client.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
