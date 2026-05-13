@@ -149,9 +149,28 @@ export default function VideosPage() {
     });
   }, [videos, query, platformFilter, categoryFilter]);
 
+  type AiAnalysis = {
+    video_title?: string;
+    video_category?: string;
+    ai_comment?: string;
+    main_errors?: string[];
+    improvement_suggestions?: string[];
+    full_script_plan?: ScriptStep[];
+    category_specific_tip?: string;
+  };
+
+  type ScriptStep = {
+    section: string;
+    timing: string;
+    visual_action: string;
+    script_dialogue: string;
+    psychology_note: string;
+    key_points?: string[];
+  };
+
   const downloadTextReport = (video: VideoItem) => {
     const score = video.video_scores?.[0];
-    const ai = (video.ai_analysis || {}) as any;
+    const ai = (video.ai_analysis || {}) as AiAnalysis;
     const lines: string[] = [];
 
     lines.push(`VIDEO RAPORU: ${video.id}`);
@@ -183,7 +202,7 @@ export default function VideosPage() {
 
     if (ai.full_script_plan?.length) {
       lines.push('TAM CEKIM SENARYOSU');
-      ai.full_script_plan.forEach((step: any, index: number) => {
+      ai.full_script_plan.forEach((step: ScriptStep, index: number) => {
         lines.push(`${index + 1}. ${step.section} (${step.timing})`);
         lines.push(`Reji: ${step.visual_action}`);
         lines.push(`Metin: ${step.script_dialogue}`);
@@ -212,35 +231,37 @@ export default function VideosPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="py-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Videolar</h1>
-          <p className="text-gray-600 mt-1">Tum video analizleri</p>
+          <h1 className="text-xl font-semibold text-zinc-900">Videolar</h1>
+          <p className="text-sm text-zinc-500 mt-0.5">Tüm video analizleri</p>
         </div>
         <button
           onClick={() => setShowAnalysisForm(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-700 transition-colors"
         >
           + Video Analizi Yap
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Filters */}
+      <div className="bg-white border border-zinc-200 rounded-xl p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <input
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Musteri, video veya analiz ara..."
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Ara..."
+            className="px-3 py-2 text-sm border border-zinc-200 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-300 bg-zinc-50 placeholder-zinc-400"
           />
           <select
             value={platformFilter}
             onChange={(event) => setPlatformFilter(event.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-sm border border-zinc-200 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-300 bg-zinc-50"
           >
-            <option value="all">Tum Platformlar</option>
+            <option value="all">Tüm Platformlar</option>
             <option value="instagram">Instagram</option>
             <option value="tiktok">TikTok</option>
             <option value="youtube">YouTube</option>
@@ -248,56 +269,52 @@ export default function VideosPage() {
           <select
             value={categoryFilter}
             onChange={(event) => setCategoryFilter(event.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-sm border border-zinc-200 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-300 bg-zinc-50"
           >
-            <option value="all">Tum Kategoriler</option>
-            <option value="listing">Portfoy / Ilan</option>
-            <option value="educational">Egitim / Bilgi</option>
-            <option value="promotional">Kampanya / Satis</option>
-            <option value="personal_brand">Kisisel Marka</option>
+            <option value="all">Tüm Kategoriler</option>
+            <option value="listing">Portfoy / İlan</option>
+            <option value="educational">Eğitim / Bilgi</option>
+            <option value="promotional">Kampanya / Satış</option>
+            <option value="personal_brand">Kişisel Marka</option>
             <option value="viral_trend">Trend / Viral</option>
           </select>
-          <div className="text-sm text-gray-500 flex items-center">
-            {filteredVideos.length} kayit
+          <div className="text-sm text-zinc-500 flex items-center">
+            {filteredVideos.length} kayıt
           </div>
         </div>
       </div>
 
       {loading && (
-        <div className="bg-white rounded-lg shadow p-6 text-gray-600">
-          Video listesi yukleniyor...
+        <div className="bg-white border border-zinc-200 rounded-xl p-6 text-sm text-zinc-500">
+          Yükleniyor...
         </div>
       )}
 
       {error && (
-        <div className="bg-white rounded-lg shadow p-6 text-red-600">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-sm text-red-600">
           {error}
         </div>
       )}
 
       {!loading && !error && filteredVideos.length === 0 && (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <div className="text-6xl mb-4">VIDEO</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Sonuc bulunamadi</h2>
-          <p className="text-gray-600 mb-6">
-            Filtreleri degistir veya yeni analiz ekle.
-          </p>
+        <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center">
+          <p className="text-zinc-500 text-sm mb-4">Sonuç bulunamadı</p>
           <button
             onClick={() => setShowAnalysisForm(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-700 transition-colors"
           >
-            Ilk Video Analizini Yap
+            İlk Video Analizini Yap
           </button>
         </div>
       )}
 
       {!loading && !error && filteredVideos.length > 0 && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 text-xs font-semibold text-gray-500 uppercase border-b">
+        <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
+          <div className="grid grid-cols-12 gap-4 px-5 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider border-b border-zinc-100 bg-zinc-50">
             <div className="col-span-3">Video</div>
             <div className="col-span-3">Skorlar</div>
-            <div className="col-span-4">Kisa Not</div>
-            <div className="col-span-2 text-right">Islem</div>
+            <div className="col-span-4">Kısa Not</div>
+            <div className="col-span-2 text-right">İşlem</div>
           </div>
           {filteredVideos.map((video) => {
             const score = video.video_scores?.[0];
@@ -305,54 +322,47 @@ export default function VideosPage() {
             const shortNote = score?.ai_comment || 'Not yok';
             const title = ai.video_title || `${video.platform.toUpperCase()} - ${video.duration_sec || 0}s`;
             return (
-              <div key={video.id} className="grid grid-cols-12 gap-4 px-6 py-4 border-b last:border-b-0">
+              <div key={video.id} className="grid grid-cols-12 gap-4 px-5 py-4 border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50 transition-colors">
                 <div className="col-span-3">
-                  <div className="text-sm font-semibold text-gray-900">
-                    {title}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Yayin: {formatDate(video.published_at)}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {video.hashtags?.length ? `#${video.hashtags.join(' #')}` : 'Hashtag yok'}
-                  </div>
+                  <div className="text-sm font-medium text-zinc-900 line-clamp-1">{title}</div>
+                  <div className="text-xs text-zinc-500 mt-1">{formatDate(video.published_at)}</div>
                   {ai.video_category && (
-                    <div className="mt-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 inline-flex px-2 py-0.5 rounded-full">
+                    <span className="mt-1.5 inline-block text-xs text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
                       {categoryLabels[ai.video_category] || ai.video_category}
-                    </div>
+                    </span>
                   )}
                 </div>
                 <div className="col-span-3">
-                  <div className="text-xs text-gray-500">Hook / Tempo / CTA</div>
-                  <div className="text-sm text-gray-900 mt-1">
+                  <div className="text-xs text-zinc-500">Hook / Tempo / CTA</div>
+                  <div className="text-sm text-zinc-900 mt-0.5 font-medium">
                     {score ? `${score.hook_score} / ${score.tempo_score} / ${score.cta_score}` : '-'}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Gorsel / Netlik</div>
-                  <div className="text-sm text-gray-900">
+                  <div className="text-xs text-zinc-500 mt-1">Görsel / Netlik</div>
+                  <div className="text-sm text-zinc-900">
                     {score ? `${score.visual_score} / ${score.clarity_score}` : '-'}
                   </div>
                 </div>
                 <div className="col-span-4">
-                  <div className="text-sm text-gray-700 line-clamp-2">{shortNote}</div>
+                  <div className="text-sm text-zinc-600 line-clamp-2">{shortNote}</div>
                 </div>
-                <div className="col-span-2 flex items-center justify-end gap-3">
+                <div className="col-span-2 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedVideo(video)}
-                    className="inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-50"
+                    className="px-2.5 py-1.5 rounded border border-zinc-200 text-zinc-700 text-xs hover:bg-zinc-100 transition-colors"
                   >
                     Detay
                   </button>
                   <Link
                     href={`/videos/${video.id}`}
-                    className="inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50"
+                    className="px-2.5 py-1.5 rounded border border-zinc-200 text-zinc-700 text-xs hover:bg-zinc-100 transition-colors"
                   >
                     Sayfa
                   </Link>
                   <button
                     type="button"
                     onClick={() => handleDelete(video.id)}
-                    className="inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-red-200 text-red-700 text-sm font-medium hover:bg-red-50"
+                    className="px-2.5 py-1.5 rounded border border-red-200 text-red-600 text-xs hover:bg-red-50 transition-colors"
                   >
                     Sil
                   </button>
@@ -364,27 +374,27 @@ export default function VideosPage() {
       )}
 
       {selectedVideo && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-4 border-b">
-                <div>
-                  <div className="text-sm text-gray-500">Video Raporu</div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {(selectedVideo.ai_analysis as any)?.video_title || `${selectedVideo.platform.toUpperCase()} - ${selectedVideo.duration_sec || 0}s`}
-                  </div>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl border border-zinc-200 shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-zinc-100">
+              <div>
+                <div className="text-xs text-zinc-500">Video Raporu</div>
+                <div className="text-base font-semibold text-zinc-900 mt-0.5">
+                  {(selectedVideo.ai_analysis as any)?.video_title || `${selectedVideo.platform.toUpperCase()} - ${selectedVideo.duration_sec || 0}s`}
                 </div>
+              </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => downloadTextReport(selectedVideo)}
-                  className="px-3 py-1.5 rounded-md border border-slate-200 text-slate-700 text-sm hover:bg-slate-50"
+                  className="px-3 py-1.5 rounded border border-zinc-200 text-zinc-700 text-sm hover:bg-zinc-50 transition-colors"
                 >
-                  Metin Indir
+                  Metin İndir
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedVideo(null)}
-                  className="px-3 py-1.5 rounded-md border border-red-200 text-red-700 text-sm hover:bg-red-50"
+                  className="px-3 py-1.5 rounded border border-zinc-200 text-zinc-700 text-sm hover:bg-zinc-50 transition-colors"
                 >
                   Kapat
                 </button>
@@ -399,9 +409,9 @@ export default function VideosPage() {
                 ) : null;
               })()}
 
-              <div className="bg-slate-50 rounded-lg p-4">
-                <div className="text-sm font-semibold text-gray-900 mb-2">AI Ozeti</div>
-                <div className="text-sm text-gray-700">
+              <div className="bg-zinc-50 border border-zinc-100 rounded-lg p-4">
+                <div className="text-sm font-medium text-zinc-900 mb-2">AI Özeti</div>
+                <div className="text-sm text-zinc-600">
                   {(selectedVideo.ai_analysis as { ai_comment?: string } | null | undefined)?.ai_comment || selectedVideo.video_scores?.[0]?.ai_comment || 'Yorum yok'}
                 </div>
               </div>

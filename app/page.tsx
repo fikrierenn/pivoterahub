@@ -1,43 +1,37 @@
 import { supabase } from '@/lib/supabase';
 import DashboardWidget from '@/components/charts/DashboardWidget';
+import { Users, Video, Star, Hash, CheckCircle, Circle } from 'lucide-react';
 
 async function getDashboardStats() {
   try {
-    // Get total clients
     const { count: clientsCount } = await supabase
       .from('clients')
       .select('*', { count: 'exact', head: true });
 
-    // Get clients by status
-    const { data: allClients } = await supabase
-      .from('clients')
-      .select('*');
-    
-    // Ensure status field exists
+    const { data: allClients } = await supabase.from('clients').select('status');
+
     const clientsWithStatus = (allClients || []).map(c => ({
       ...c,
-      status: c.status || 'lead'
+      status: c.status || 'lead',
     }));
 
-    // Get total videos
     const { count: videosCount } = await supabase
       .from('videos')
       .select('*', { count: 'exact', head: true });
 
-    // Get average score
     const { data: scores } = await supabase
       .from('video_scores')
       .select('hook_score, tempo_score, clarity_score, cta_score, visual_score');
 
     let avgScore = 0;
     if (scores && scores.length > 0) {
-      const totalScore = scores.reduce((sum, score) => {
-        return sum + (score.hook_score + score.tempo_score + score.clarity_score + score.cta_score + score.visual_score) / 5;
-      }, 0);
-      avgScore = totalScore / scores.length;
+      const total = scores.reduce(
+        (sum, s) => sum + (s.hook_score + s.tempo_score + s.clarity_score + s.cta_score + s.visual_score) / 5,
+        0,
+      );
+      avgScore = total / scores.length;
     }
 
-    // Get total hashtags
     const { count: hashtagsCount } = await supabase
       .from('hashtag_stats')
       .select('*', { count: 'exact', head: true });
@@ -57,8 +51,7 @@ async function getDashboardStats() {
       hashtags: hashtagsCount || 0,
       statusBreakdown,
     };
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+  } catch {
     return {
       clients: 0,
       videos: 0,
@@ -71,102 +64,63 @@ async function getDashboardStats() {
 
 export default async function Home() {
   const stats = await getDashboardStats();
-  
+
+  const statCards = [
+    { label: 'Toplam Müşteri', value: stats.clients, Icon: Users },
+    { label: 'Toplam Video', value: stats.videos, Icon: Video },
+    { label: 'Ort. Skor', value: stats.avgScore, Icon: Star },
+    { label: 'Aktif Hashtag', value: stats.hashtags, Icon: Hash },
+  ];
+
+  const statusItems = [
+    { label: 'Lead', value: stats.statusBreakdown.lead, color: 'bg-blue-500' },
+    { label: 'Prospect', value: stats.statusBreakdown.prospect, color: 'bg-amber-500' },
+    { label: 'Active', value: stats.statusBreakdown.active, color: 'bg-emerald-500' },
+    { label: 'Inactive', value: stats.statusBreakdown.inactive, color: 'bg-zinc-400' },
+    { label: 'Completed', value: stats.statusBreakdown.completed, color: 'bg-violet-500' },
+  ];
+
   return (
-    <div className="p-8">
+    <div className="py-8">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Video analizi ve performans takibi özeti</p>
+        <h1 className="text-xl font-semibold text-zinc-900">Dashboard</h1>
+        <p className="text-sm text-zinc-500 mt-0.5">Video analizi ve performans takibi</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Toplam Müşteri</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.clients}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {statCards.map(({ label, value, Icon }) => (
+          <div key={label} className="bg-white border border-zinc-200 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-zinc-500">{label}</p>
+              <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center">
+                <Icon className="w-4 h-4 text-zinc-500" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">👥</span>
-            </div>
+            <p className="text-2xl font-semibold text-zinc-900">{value}</p>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Toplam Video</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.videos}</p>
+      {/* Client Status */}
+      <div className="bg-white border border-zinc-200 rounded-xl p-6 mb-6">
+        <h2 className="text-sm font-medium text-zinc-900 mb-4">Müşteri Durumu</h2>
+        <div className="grid grid-cols-5 gap-3">
+          {statusItems.map(({ label, value, color }) => (
+            <div key={label} className="text-center p-4 bg-zinc-50 rounded-lg border border-zinc-100">
+              <div className={`w-2 h-2 rounded-full ${color} mx-auto mb-2`}></div>
+              <div className="text-xl font-semibold text-zinc-900">{value}</div>
+              <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">🎥</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Ort. Skor</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.avgScore}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">⭐</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Aktif Hashtag</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.hashtags}</p>
-            </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">#️⃣</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Client Status Breakdown */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Müşteri Durumu</h2>
-        <div className="grid grid-cols-5 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-3xl mb-2">🔵</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.lead}</div>
-            <div className="text-sm text-gray-600">Lead</div>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <div className="text-3xl mb-2">🟡</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.prospect}</div>
-            <div className="text-sm text-gray-600">Prospect</div>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-3xl mb-2">🟢</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.active}</div>
-            <div className="text-sm text-gray-600">Active</div>
-          </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-3xl mb-2">⚪</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.inactive}</div>
-            <div className="text-sm text-gray-600">Inactive</div>
-          </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="text-3xl mb-2">✅</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.completed}</div>
-            <div className="text-sm text-gray-600">Completed</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Müşteri Durumu Dağılımı</h2>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div className="bg-white border border-zinc-200 rounded-xl p-6">
+          <h2 className="text-sm font-medium text-zinc-900 mb-4">Müşteri Durumu Dağılımı</h2>
           <DashboardWidget
             title=""
             data={[
@@ -174,7 +128,7 @@ export default async function Home() {
               { name: 'Prospect', value: stats.statusBreakdown.prospect },
               { name: 'Active', value: stats.statusBreakdown.active },
               { name: 'Inactive', value: stats.statusBreakdown.inactive },
-              { name: 'Completed', value: stats.statusBreakdown.completed }
+              { name: 'Completed', value: stats.statusBreakdown.completed },
             ]}
             chartType="donut"
             size="medium"
@@ -183,8 +137,8 @@ export default async function Home() {
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Performans Trendi</h2>
+        <div className="bg-white border border-zinc-200 rounded-xl p-6">
+          <h2 className="text-sm font-medium text-zinc-900 mb-4">Performans Trendi</h2>
           <DashboardWidget
             title=""
             data={[
@@ -194,7 +148,7 @@ export default async function Home() {
               { name: 'Nis', value: 61 },
               { name: 'May', value: 55 },
               { name: 'Haz', value: 67 },
-              { name: 'Tem', value: 73 }
+              { name: 'Tem', value: 73 },
             ]}
             chartType="line"
             size="medium"
@@ -205,10 +159,9 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* Quick Stats Widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Video Skorları</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white border border-zinc-200 rounded-xl p-6">
+          <h3 className="text-sm font-medium text-zinc-900 mb-4">Video Skorları</h3>
           <DashboardWidget
             title=""
             data={[
@@ -216,7 +169,7 @@ export default async function Home() {
               { name: 'Tempo', value: 6.8 },
               { name: 'Netlik', value: 8.1 },
               { name: 'CTA', value: 6.5 },
-              { name: 'Görsel', value: 7.9 }
+              { name: 'Görsel', value: 7.9 },
             ]}
             chartType="bar"
             size="small"
@@ -226,8 +179,8 @@ export default async function Home() {
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Aylık Büyüme</h3>
+        <div className="bg-white border border-zinc-200 rounded-xl p-6">
+          <h3 className="text-sm font-medium text-zinc-900 mb-4">Aylık Büyüme</h3>
           <DashboardWidget
             title=""
             data={[
@@ -237,7 +190,7 @@ export default async function Home() {
               { name: '4', value: 162 },
               { name: '5', value: 178 },
               { name: '6', value: 195 },
-              { name: '7', value: 210 }
+              { name: '7', value: 210 },
             ]}
             chartType="sparkline"
             size="small"
@@ -247,14 +200,14 @@ export default async function Home() {
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Platform Dağılımı</h3>
+        <div className="bg-white border border-zinc-200 rounded-xl p-6">
+          <h3 className="text-sm font-medium text-zinc-900 mb-4">Platform Dağılımı</h3>
           <DashboardWidget
             title=""
             data={[
               { name: 'Instagram', value: 65 },
               { name: 'TikTok', value: 25 },
-              { name: 'YouTube', value: 10 }
+              { name: 'YouTube', value: 10 },
             ]}
             chartType="pie"
             size="small"
@@ -265,94 +218,56 @@ export default async function Home() {
       </div>
 
       {/* API Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Video Analysis API</h2>
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-              Aktif
-            </span>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Video analizi, Whisper transkript, AI skorlama ve hashtag güncelleme
-          </p>
-          <div className="space-y-2">
-            <div className="flex items-center text-sm text-gray-700">
-              <span className="mr-2 text-green-500">✓</span>
-              <span>Whisper Transcription</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        {[
+          {
+            title: 'Video Analysis API',
+            endpoint: 'POST /api/video-analysis',
+            features: ['Gemini Transcription', 'AI Skorlama (Hook, Tempo, CTA, Visual)', 'Hashtag Stats Güncelleme'],
+          },
+          {
+            title: 'Growth Report API',
+            endpoint: 'POST /api/growth-report',
+            features: ['Dönem Karşılaştırması', 'Video Performans Analizi', 'AI Değerlendirme (Türkçe)'],
+          },
+        ].map(({ title, endpoint, features }) => (
+          <div key={title} className="bg-white border border-zinc-200 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-medium text-zinc-900">{title}</h2>
+              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">
+                Aktif
+              </span>
             </div>
-            <div className="flex items-center text-sm text-gray-700">
-              <span className="mr-2 text-green-500">✓</span>
-              <span>AI Skorlama (Hook, Tempo, CTA, Visual)</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-700">
-              <span className="mr-2 text-green-500">✓</span>
-              <span>Hashtag Stats Güncelleme</span>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-              POST /api/video-analysis
-            </code>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Growth Report API</h2>
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-              Aktif
-            </span>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Gelişim analizi, dönem karşılaştırması ve AI değerlendirmesi
-          </p>
-          <div className="space-y-2">
-            <div className="flex items-center text-sm text-gray-700">
-              <span className="mr-2 text-green-500">✓</span>
-              <span>Dönem Karşılaştırması</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-700">
-              <span className="mr-2 text-green-500">✓</span>
-              <span>Video Performans Analizi</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-700">
-              <span className="mr-2 text-green-500">✓</span>
-              <span>AI Değerlendirme (Türkçe)</span>
+            <ul className="space-y-1.5 mb-4">
+              {features.map(f => (
+                <li key={f} className="flex items-center gap-2 text-sm text-zinc-600">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <div className="pt-3 border-t border-zinc-100">
+              <code className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded">{endpoint}</code>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-              POST /api/growth-report
-            </code>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Tech Stack */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Teknoloji Stack</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-3xl mb-2">⚡</div>
-            <div className="font-semibold text-gray-900">Next.js 16</div>
-            <div className="text-xs text-gray-600 mt-1">App Router + Turbopack</div>
-          </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-3xl mb-2">🗄️</div>
-            <div className="font-semibold text-gray-900">Supabase</div>
-            <div className="text-xs text-gray-600 mt-1">PostgreSQL Database</div>
-          </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-3xl mb-2">🤖</div>
-            <div className="font-semibold text-gray-900">OpenAI</div>
-            <div className="text-xs text-gray-600 mt-1">GPT-4o-mini</div>
-          </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-3xl mb-2">🎙️</div>
-            <div className="font-semibold text-gray-900">Whisper</div>
-            <div className="text-xs text-gray-600 mt-1">Audio Transcription</div>
-          </div>
+      <div className="bg-white border border-zinc-200 rounded-xl p-6">
+        <h2 className="text-sm font-medium text-zinc-900 mb-4">Teknoloji Stack</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { name: 'Next.js 16', desc: 'App Router + Turbopack' },
+            { name: 'Supabase', desc: 'PostgreSQL Database' },
+            { name: 'Gemini + GPT-4o', desc: 'Video & Director AI' },
+            { name: 'Claude Sonnet', desc: 'FrameAgent' },
+          ].map(({ name, desc }) => (
+            <div key={name} className="p-4 bg-zinc-50 border border-zinc-100 rounded-lg">
+              <div className="text-sm font-medium text-zinc-900">{name}</div>
+              <div className="text-xs text-zinc-500 mt-0.5">{desc}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
