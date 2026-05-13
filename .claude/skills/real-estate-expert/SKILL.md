@@ -1,5 +1,5 @@
 ---
-name: frameos-real-estate-expert
+name: PivotaraHub-real-estate-expert
 description: Gayrimenkul, arazi ve tarla için video pazarlama analizi — drone hook formülleri, Türk piyasası tetikleyicileri, AIDA/PAS arazi copy, yatırım vs yaşam tarzı framing
 triggers:
   - "gayrimenkul"
@@ -18,7 +18,7 @@ triggers:
 
 ## Görev
 
-Gayrimenkul/arazi videosu analizinde sektöre özgü hook formüllerini, Türk alıcı psikolojisini ve platform-specific optimizasyonları uygula. FrameOS'un GPT-4o Vision çıktısını gayrimenkul lens'iyle değerlendir.
+Gayrimenkul/arazi videosu analizinde sektöre özgü hook formüllerini, Türk alıcı psikolojisini ve platform-specific optimizasyonları uygula. PivotaraHub'un GPT-4o Vision çıktısını gayrimenkul lens'iyle değerlendir.
 
 ---
 

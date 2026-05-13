@@ -1,5 +1,5 @@
 ---
-name: frameos-social-media-analyst
+name: PivotaraHub-social-media-analyst
 description: Sosyal medya içerik analizi — STEPPS viral formülü, Hormozi hook, Cialdini ilkeleri, platform-specific scoring, retention analizi
 triggers:
   - "sosyal medya analiz"

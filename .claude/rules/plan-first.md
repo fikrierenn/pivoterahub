@@ -32,6 +32,6 @@
 
 | ID | Başlık | Plan |
 |---|---|---|
-| G-01 | Auth Sistemi | plans/01-frameos-merge.md (FAZ 1) |
-| F-01 | Director AI | plans/01-frameos-merge.md (FAZ 2) |
-| F-02 | FrameAgent | plans/01-frameos-merge.md (FAZ 3) |
+| G-01 | Auth Sistemi | plans/01-PivotaraHub-merge.md (FAZ 1) |
+| F-01 | Director AI | plans/01-PivotaraHub-merge.md (FAZ 2) |
+| F-02 | FrameAgent | plans/01-PivotaraHub-merge.md (FAZ 3) |

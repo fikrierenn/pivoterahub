@@ -1,5 +1,5 @@
 ---
-name: frameos-content-optimizer
+name: PivotaraHub-content-optimizer
 description: İçerik optimizasyonu — video script rewrite, caption üretimi, hashtag stratejisi, A/B test varyantları, SEO/platform metadata
 triggers:
   - "içerik optimize"
@@ -53,7 +53,7 @@ Medium (10K–100K): 5–7 adet — hedef kitle
 Small (<10K): 2–3 adet — niche, yüksek ilgililik
 ```
 
-### FrameOS İçerik Türüne Göre Hashtag Şablonları
+### PivotaraHub İçerik Türüne Göre Hashtag Şablonları
 
 **Video Analiz İçerikleri:**
 ```

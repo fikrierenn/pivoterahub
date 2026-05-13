@@ -1,9 +1,9 @@
 ---
-name: frameos-security
-description: FrameOS güvenlik kurallarını yeni kod yazılırken proaktif uygular — API auth guard, rate limit hatırlatması, key koruması, input validasyonu. Yeni API route veya upload kodu yazılırken tetiklenir.
+name: pivotera-security
+description: PivotaraHub güvenlik kurallarını yeni kod yazılırken proaktif uygular — API auth guard, rate limit hatırlatması, key koruması, input validasyonu. Yeni API route veya upload kodu yazılırken tetiklenir.
 ---
 
-# FrameOS Security Skill
+# PivotaraHub Security Skill
 
 ## Tetikleyiciler (Proaktif)
 - Yeni `/api/` route yazılırken

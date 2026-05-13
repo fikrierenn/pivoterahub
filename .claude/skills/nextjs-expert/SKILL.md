@@ -1,9 +1,9 @@
 ---
-name: frameos-nextjs-expert
-description: Next.js 14 App Router pattern'larını FrameOS'ta doğru uygular — server/client boundary, data fetching, loading state, error boundary. Yeni page veya component yazılırken proaktif tetiklenir.
+name: nextjs-expert
+description: Next.js 16 App Router pattern'larını PivotaraHub'ta doğru uygular — server/client boundary, data fetching, loading state, error boundary. Yeni page veya component yazılırken proaktif tetiklenir.
 ---
 
-# FrameOS Next.js Expert Skill
+# PivotaraHub Next.js Expert Skill
 
 ## Tetikleyiciler (Proaktif)
 - Yeni `page.tsx`, `layout.tsx`, `loading.tsx` yazılırken
@@ -128,7 +128,7 @@ const fetchData = async () => {
 ```typescript
 // Server Component'te
 export const metadata = {
-  title: 'FrameOS — Video Analiz',
+  title: 'PivotaraHub — Video Analiz',
   description: 'AI destekli video analiz platformu',
 };
 ```

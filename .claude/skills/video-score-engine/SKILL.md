@@ -1,5 +1,5 @@
 ---
-name: frameos-video-score-engine
+name: PivotaraHub-video-score-engine
 description: Video kalite skorlama — VMAF/FFmpeg metrikler, PySceneDetect tempo analizi, Walter Murch 6 kural, OpenFace duygu, ses kalitesi LUFS/SNR
 triggers:
   - "video skor"
@@ -14,7 +14,7 @@ triggers:
 
 ## Görev
 
-FrameOS'un FFmpeg frame extraction ve GPT-4o Vision çıktısını kullanarak video'nun teknik ve sinematik kalitesini çok boyutlu olarak skorla. Açık kaynak araçlarla desteklenen hibrit analiz yap.
+PivotaraHub'un FFmpeg frame extraction ve GPT-4o Vision çıktısını kullanarak video'nun teknik ve sinematik kalitesini çok boyutlu olarak skorla. Açık kaynak araçlarla desteklenen hibrit analiz yap.
 
 ---
 
@@ -188,7 +188,7 @@ demucs --two-stems vocals input.mp4
 demucs -n htdemucs_6s input.mp4
 ```
 
-**FrameOS Kullanım Senaryosu:**
+**PivotaraHub Kullanım Senaryosu:**
 - Background noise tespiti: `no_vocals.wav` analizi
 - Müzik hakları kontrolü: hangi müzik var?
 - Ses netliği skoru: `vocals.wav` kalitesi ölçümü

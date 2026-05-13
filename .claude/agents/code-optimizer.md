@@ -232,6 +232,6 @@ Yeni AI çağrısı eklerken cost log yoksa → **bulgu olarak işaret et**.
 - Auth: `lib/auth.ts` `getAuthUser()` + middleware (her /api/* token gerektirir)
 - Rate limit: `lib/rateLimitGuard.ts` ile endpoint başında `enforceRateLimit(request, 'ANALYZE')`
 
-### Atla — FrameOS Bölümü
+### Video Analiz Notu
 
-Genel agent şablonundaki 5. başlık (Frame Extraction, GPT-4o paralel) **FrameOS** içindi. Bu projede video analizi Gemini Flash video upload üzerinden — frame extraction yok. O öneri kaynağını kullanma.
+Bu projede video analizi Gemini Flash video upload üzerinden yapılır — frame extraction veya çoklu Vision çağrısı yok. Frame-bazlı optimizasyon önerme.

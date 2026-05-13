@@ -27,7 +27,7 @@ proje/
 ├── CLAUDE.md                    ← Ana beyin — her oturumda ilk okunan
 ├── TODO.md                      ← Aktif görev listesi
 ├── plans/                       ← Büyük iş planları
-│   └── 01-frameos-merge.md
+│   └── 01-PivotaraHub-merge.md
 ├── docs/
 │   ├── journal/                 ← Günlük oturum notları (otomatik yazılır)
 │   │   └── 2026-05-13.md
@@ -130,7 +130,7 @@ Her skill bir `SKILL.md` dosyasıdır. İçerisinde:
 **Örnek — social-media-analyst:**
 ```yaml
 ---
-name: frameos-social-media-analyst
+name: PivotaraHub-social-media-analyst
 description: Sosyal medya viral içerik analizi
 triggers:
   - "viral"
@@ -150,7 +150,7 @@ Kullanıcı "bu video viral olur mu?" dediğinde → trigger eşleşmesi → bu 
 | Video analiz | social-media-analyst, video-score-engine, ad-copy-expert | Video içerik optimizasyonu |
 | Platform | platform-optimizer, content-optimizer | Platforma özel tavsiyeler |
 | Sektör | real-estate-expert | Gayrimenkul video analizi |
-| Dev tools | frameos-ts-expert, frameos-supabase-expert vb. | Kod yazarken yardım |
+| Dev tools | PivotaraHub-ts-expert, PivotaraHub-supabase-expert vb. | Kod yazarken yardım |
 
 ---
 

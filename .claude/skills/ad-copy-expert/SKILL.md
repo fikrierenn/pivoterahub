@@ -1,5 +1,5 @@
 ---
-name: frameos-ad-copy-expert
+name: PivotaraHub-ad-copy-expert
 description: Reklam metni analizi ve optimizasyonu — Hormozi/Brunson/Miller/Deiss framework'leri, 232+ copywriting tekniği, hook scoring, CTA etkinliği, senaryo şablonları
 triggers:
   - "reklam analiz"

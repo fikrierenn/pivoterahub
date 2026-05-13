@@ -48,4 +48,4 @@
 ## TAMAMLANANLAR
 
 - ✅ `.claude/` workflow sistemi kuruldu (CLAUDE.md, rules, skills, agents, hooks, memory)
-- ✅ `plans/01-frameos-merge.md` — merge planı yazıldı
+- ✅ `plans/01-PivotaraHub-merge.md` — merge planı yazıldı

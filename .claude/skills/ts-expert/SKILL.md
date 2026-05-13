@@ -1,5 +1,5 @@
 ---
-name: frameos-ts-expert
+name: ts-expert
 description: TypeScript/React kod kalitesi — type safety, interface tasarımı, React pattern'ları, async/await, error boundary, hook kuralları
 triggers:
   - "typescript"
@@ -13,7 +13,7 @@ triggers:
 
 ## Görev
 
-FrameOS TypeScript/React kodunu analiz et. Type safety açıklarını bul, anti-pattern'ları düzelt, App Router idiomlarına uyumu kontrol et.
+PivotaraHub TypeScript/React kodunu analiz et. Type safety açıklarını bul, anti-pattern'ları düzelt, App Router idiomlarına uyumu kontrol et.
 
 ---
 
@@ -151,7 +151,7 @@ function VideoPlayer({ src }: { src: string }) {
 ### API Route Tip Güvenliği
 
 ```typescript
-// ✅ FrameOS standardı
+// ✅ PivotaraHub standardı
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -203,7 +203,7 @@ try {
 ## Custom Hook Standartları
 
 ```typescript
-// ✅ FrameOS hook template
+// ✅ PivotaraHub hook template
 function useVideoAnalysis(videoId: string) {
   const [data, setData] = useState<VideoAnalysis | null>(null);
   const [loading, setLoading] = useState(true);

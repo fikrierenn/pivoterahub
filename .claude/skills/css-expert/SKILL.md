@@ -1,5 +1,5 @@
 ---
-name: frameos-css-expert
+name: css-expert
 description: Tailwind CSS analizi ve optimizasyonu — utility class audit, design system tutarlılığı, responsive breakpoint, dark mode, performance
 triggers:
   - "css analiz"
@@ -13,13 +13,13 @@ triggers:
 
 ## Görev
 
-FrameOS bileşenlerindeki Tailwind CSS kullanımını analiz et, anti-pattern'ları tespit et, design system tutarlılığını değerlendir ve optimizasyon önerileri üret.
+PivotaraHub bileşenlerindeki Tailwind CSS kullanımını analiz et, anti-pattern'ları tespit et, design system tutarlılığını değerlendir ve optimizasyon önerileri üret.
 
 ---
 
-## FrameOS Tailwind Config Kuralları
+## PivotaraHub Tailwind Config Kuralları
 
-FrameOS'un renk/spacing sistemi `tailwind.config.js`'e bağlı. Her düzenleme bu sisteme uygun olmalı.
+PivotaraHub'un renk/spacing sistemi `tailwind.config.js`'e bağlı. Her düzenleme bu sisteme uygun olmalı.
 
 **Temel Renkler (kullanılması gereken):**
 ```
@@ -165,7 +165,7 @@ const colorMap = { red: 'bg-red-600', blue: 'bg-blue-600' };
 
 ---
 
-## FrameOS Bileşen Standartları
+## PivotaraHub Bileşen Standartları
 
 ```tsx
 // Standart Card bileşeni

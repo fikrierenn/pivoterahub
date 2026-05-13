@@ -1,9 +1,9 @@
 ---
-name: frameos-supabase-expert
-description: FrameOS Supabase kullanım kurallarını uygular — RLS, client/admin ayrımı, şifreleme, storage pattern. Yeni Supabase sorgusu veya tablo yazılırken proaktif tetiklenir.
+name: supabase-expert
+description: PivotaraHub Supabase kullanım kurallarını uygular — RLS, client/admin ayrımı, şifreleme, storage pattern. Yeni Supabase sorgusu veya tablo yazılırken proaktif tetiklenir.
 ---
 
-# FrameOS Supabase Expert Skill
+# PivotaraHub Supabase Expert Skill
 
 ## Tetikleyiciler (Proaktif)
 - Yeni Supabase sorgusu yazılırken

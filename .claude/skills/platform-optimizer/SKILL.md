@@ -1,5 +1,5 @@
 ---
-name: frameos-platform-optimizer
+name: PivotaraHub-platform-optimizer
 description: Platform-specific video optimizasyon rehberi — format dönüşümü, süre kesme, aspect ratio, thumbnail, kapak karesi önerisi
 triggers:
   - "platform optimize"
@@ -118,7 +118,7 @@ ffmpeg -i input.mp4 -af "loudnorm=I=-14:TP=-1:LRA=11" output_normalized.mp4
 
 ### Frame Seçim Algoritması
 
-FrameOS'ta thumbnail seçimi için GPT-4o'ya sor:
+PivotaraHub'ta thumbnail seçimi için GPT-4o'ya sor:
 ```
 Aşağıdaki frame'lerden thumbnail için en iyi 3'ünü seç.
 Kriterler:

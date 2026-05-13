@@ -1,14 +1,16 @@
-# Plan 01 — FrameOS × PivotaraHub Birleşimi (Tam)
+# Plan 01 — Platform Birleşimi (Tam)
 
-**Durum:** Onay Bekliyor
+**Durum:** Tarihsel — Plan 02 ve 03 ile takip edildi, kısmen tamamlandı
 **Tier:** 3
 **Tarih:** 2026-05-13
+
+> Bu plan, ikinci bir kod tabanından özelliklerin PivotaraHub'a taşınması için yazıldı. Bugün PivotaraHub bağımsız tek platform olarak ilerliyor; bu dosya tarihsel kayıt olarak tutuluyor.
 
 ---
 
 ## Problem
 
-FrameOS'ta çalışan AI pipeline + 6 fazlı ROADMAP özelliklerinin tamamı PivotaraHub'a taşınarak tek güçlü platform oluşturulacak. PivotaraHub base alınıyor: Supabase DB, Client CRM, Next.js 16 zaten olgun. Model maliyeti minimize edilecek — mümkün olan her yerde ücretsiz/ucuz alternatif.
+Önceki kod tabanında çalışan AI pipeline + 6 fazlı ROADMAP özelliklerinin tamamı PivotaraHub'a taşınarak tek güçlü platform oluşturulacak. PivotaraHub base alınıyor: Supabase DB, Client CRM, Next.js 16 zaten olgun. Model maliyeti minimize edilecek — mümkün olan her yerde ücretsiz/ucuz alternatif.
 
 ---
 
@@ -16,7 +18,7 @@ FrameOS'ta çalışan AI pipeline + 6 fazlı ROADMAP özelliklerinin tamamı Piv
 
 ### Görev → En Ucuz Uygun Model
 
-| Görev | Eski (FrameOS) | Yeni (PivotaraHub) | Tasarruf |
+| Görev | Eski | Yeni | Tasarruf |
 |-------|---------------|-------------------|---------|
 | Video transkripsiyon | Whisper $0.006/dk | **Gemini 2.5 Flash FREE tier** | ~%100 |
 | JSON skor analizi | Gemini 2.5 Flash $0.075/M | **Gemini 2.5 Flash-Lite $0.10/M** | ~%30 |
@@ -105,7 +107,7 @@ ANALYSIS_SERVICE_URL=http://localhost:8001        # DOVER, FER, faster-whisper
 10. Tüm mevcut API route'lara auth + rate limit ekle
 11. `lib/llm/gemini.ts` → GEMINI_ANALYSIS_MODEL env var (Flash-Lite geçişi)
 
-### FAZ 2 — FrameOS Video AI (Director + FFmpeg)
+### FAZ 2 — Video AI (Director + FFmpeg)
 
 1. `npm install fluent-ffmpeg yt-dlp-exec`
 2. `lib/videoPreprocessor.ts` — FFmpeg frame extraction
@@ -127,7 +129,7 @@ ANALYSIS_SERVICE_URL=http://localhost:8001        # DOVER, FER, faster-whisper
 6. `components/AgentPanel.tsx`
 7. `components/AutoAnalysisResults.tsx`
 
-### FAZ 4 — Sosyal Medya & Reklam Zekası (FrameOS Faza 3'ten)
+### FAZ 4 — Sosyal Medya & Reklam Zekası (önceki Faz 3'ten)
 
 1. `lib/socialMediaScorer.ts` — STEPPS + Hormozi + Cialdini formülleri (LLM-free, hesaplamalı)
 2. `lib/viralityPredictor.ts` — viral-predictor LLM prompt + pyviralcontent entegrasyonu
@@ -137,7 +139,7 @@ ANALYSIS_SERVICE_URL=http://localhost:8001        # DOVER, FER, faster-whisper
 6. Auto-analysis pipeline'a moderation ekle (her video için)
 7. Supabase migration: `social_scores`, `ad_copies` tabloları
 
-### FAZ 5 — Python Microservice (FrameOS Faza 2'den + Eksik Araçlar)
+### FAZ 5 — Python Microservice (önceki Faz 2'den + Eksik Araçlar)
 
 ```
 services/video-analysis/
@@ -164,7 +166,7 @@ const ANALYSIS_API = process.env.ANALYSIS_SERVICE_URL ?? 'http://localhost:8001'
 
 Duygu timeline + shot boundary frontend görselleştirmesi (Recharts — zaten kurulu).
 
-**Eklenen araçlar (FrameOS araştırmasından düşmüşler):**
+**Eklenen araçlar (PivotaraHub araştırmasından düşmüşler):**
 - **WhisperX** — kelime bazlı timestamp → altyazı senkronizasyonu, hook zamanı tespiti
 - **Pyannote 3.1** — kim ne zaman konuştu → multi-speaker videolar için kritik
 - **IQA-PyTorch** — 20+ kalite metriği (MUSIQ, NIMA, BRISQUE) → DOVER'a ek sinyal
@@ -173,7 +175,7 @@ Duygu timeline + shot boundary frontend görselleştirmesi (Recharts — zaten k
 - **DeepFace** — Docker REST API, 7 duygu + yaş/cinsiyet → FER'den zengin çıktı
 - **harbarex/tiktok-virality** — ViViT binary classifier → TikTok viral probability
 
-### FAZ 6 — Minimax & Ses Genişletme (FrameOS Faza 4'ten)
+### FAZ 6 — Minimax & Ses Genişletme (önceki Faz 4'ten)
 
 1. `lib/minimax.ts` — TTS + voice clone + music
 2. `app/api/tts-minimax/route.ts`
@@ -214,7 +216,7 @@ Kullanım: video frame'lerini FFmpeg ile extract et → MediaPipe ile analiz →
 ### FAZ 7 — Supabase Entegrasyonu (Tüm Yeni Tablolar)
 
 ```sql
--- Migration: 20260513000001_frameos_merge.sql
+-- Migration: 20260513000001_PivotaraHub_merge.sql
 
 -- Video analiz genişletme
 ALTER TABLE videos ADD COLUMN IF NOT EXISTS cinematic_analysis jsonb;
@@ -294,7 +296,7 @@ FAZ 7 (DB Migration)      ← Her fazda kademeli uygulanır
 | Python microservice | DOVER, FER, Whisper | $0 (local) / ~$10 (VPS) |
 | **Toplam** | | **~$11-21/ay** |
 
-### vs FrameOS orijinal model seçimi
+### vs PivotaraHub orijinal model seçimi
 ~$50-80/ay → **%65-75 tasarruf**
 
 ---
