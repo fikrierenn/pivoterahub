@@ -6,8 +6,12 @@ import { getVideoStatsByClientId } from '@/lib/db/video-stats';
 import { getVideoScoresByClientId } from '@/lib/db/video-scores';
 import { getTopHashtags, getWeakHashtags } from '@/lib/db/hashtag-stats';
 import { generateGrowthReport } from '@/lib/llm/growth-report';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'ANALYZE');
+  if (limited) return limited;
+
   try {
     // Parse and validate request
     const body = await request.json();

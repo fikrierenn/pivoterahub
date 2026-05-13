@@ -8,8 +8,12 @@ import { updateHashtagStats } from '@/lib/db/hashtag-stats';
 import { downloadVideo, transcribeVideo } from '@/lib/whisper/transcribe';
 import { analyzeVideo } from '@/lib/llm/video-analysis';
 import { supabase } from '@/lib/supabase';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'ANALYZE');
+  if (limited) return limited;
+
   try {
     const contentType = request.headers.get('content-type') || '';
     let validatedData: any;

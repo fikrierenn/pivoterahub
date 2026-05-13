@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { CompetitorScraper } from '@/lib/scraping/competitor-scraper';
 import { analyzeCompetitors } from '@/lib/llm/competitor-analysis';
 import { upsertCompetitorAnalysis, getCompetitorAnalysisByClientId } from '@/lib/db/competitor-analysis';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 // Request validation schema
 const CompetitorAnalysisRequestSchema = z.object({
@@ -15,6 +16,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const limited = await enforceRateLimit(request, 'ANALYZE');
+  if (limited) return limited;
+
   try {
     const { id } = await params;
     const clientId = id;

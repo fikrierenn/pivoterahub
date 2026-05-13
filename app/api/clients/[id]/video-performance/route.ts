@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { analyzeViralVideos, generatePerformanceInsights } from '@/lib/llm/video-performance-analysis';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const limited = await enforceRateLimit(request, 'ANALYZE');
+  if (limited) return limited;
+
   try {
     const { id } = await params;
     const clientId = id;

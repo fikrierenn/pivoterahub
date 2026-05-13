@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { analyzeInstagramBio } from '@/lib/llm/instagram-analysis';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 // Request validation schema
 const BioAnalysisRequestSchema = z.object({
@@ -17,6 +18,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const limited = await enforceRateLimit(request, 'DEFAULT');
+  if (limited) return limited;
+
   try {
     const { id } = await params;
     const clientId = id;
