@@ -6,191 +6,6 @@ import { useParams, useRouter } from 'next/navigation';
 import IntakeFormViewer from '@/components/IntakeFormViewer';
 import VideoAnalysisForm from '@/components/VideoAnalysisForm';
 
-// Client Info Editor Component
-function ClientInfoEditor({ client, intakeForm, onUpdate }: { 
-  client: any, 
-  intakeForm: any, 
-  onUpdate: () => void 
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({
-    competitors: intakeForm?.answers?.competitors || '',
-    main_goals: intakeForm?.answers?.main_goals || '',
-    competitive_advantage: intakeForm?.answers?.competitive_advantage || '',
-    meeting_notes: intakeForm?.answers?.meeting_notes || ''
-  });
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      // Intake form'u güncelle
-      const response = await fetch(`/api/clients/${client.id}/intake`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          answers: {
-            ...intakeForm?.answers,
-            ...editData
-          }
-        })
-      });
-
-      if (response.ok) {
-        setIsEditing(false);
-        onUpdate();
-        alert('Bilgiler başarıyla güncellendi!');
-      } else {
-        alert('Güncelleme hatası!');
-      }
-    } catch (error) {
-      console.error('Update error:', error);
-      alert('Güncelleme sırasında hata oluştu');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const competitorCount = editData.competitors ? 
-    editData.competitors.split(/[,\n]/).filter((c: string) => c.trim()).length : 0;
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6 mb-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">📝 Müşteri Bilgileri</h2>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          {isEditing ? '❌ İptal' : '✏️ Düzenle'}
-        </button>
-      </div>
-
-      {isEditing ? (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              🏆 Rakipler (Instagram kullanıcı adları - virgül veya satır ile ayırın)
-            </label>
-            <textarea
-              value={editData.competitors}
-              onChange={(e) => setEditData({...editData, competitors: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              rows={3}
-              placeholder="@rakip1, @rakip2, @rakip3 veya her satıra bir rakip"
-            />
-            <div className="text-sm text-gray-500 mt-1">
-              {competitorCount > 0 ? `${competitorCount} rakip tespit edildi` : 'Henüz rakip eklenmemiş'}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              🎯 Ana Hedefler
-            </label>
-            <textarea
-              value={editData.main_goals}
-              onChange={(e) => setEditData({...editData, main_goals: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              rows={3}
-              placeholder="Müşterinin ana hedefleri..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              💪 Rekabet Avantajı
-            </label>
-            <textarea
-              value={editData.competitive_advantage}
-              onChange={(e) => setEditData({...editData, competitive_advantage: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              rows={2}
-              placeholder="Müşterinin rakiplerinden farkı..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              📝 Görüşme Notları
-            </label>
-            <textarea
-              value={editData.meeting_notes}
-              onChange={(e) => setEditData({...editData, meeting_notes: e.target.value})}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              rows={4}
-              placeholder="Görüşme sırasında alınan notlar..."
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-            >
-              {saving ? '💾 Kaydediliyor...' : '💾 Kaydet'}
-            </button>
-            <button
-              onClick={() => setIsEditing(false)}
-              className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-            >
-              İptal
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="border-l-4 border-orange-500 pl-4">
-              <h3 className="font-semibold text-gray-800 mb-2">🏆 Rakipler</h3>
-              {editData.competitors ? (
-                <div className="text-gray-700">
-                  <div className="text-sm text-green-600 mb-2">
-                    ✅ {competitorCount} rakip tanımlanmış
-                  </div>
-                  <div className="text-sm bg-gray-50 p-2 rounded">
-                    {editData.competitors.split(/[,\n]/).filter((c: string) => c.trim()).map((comp: string, i: number) => (
-                      <span key={i} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-1 mb-1">
-                        {comp.trim()}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-red-600 text-sm">❌ Rakip bilgisi eksik - Rakip analizi yapılamaz</div>
-              )}
-            </div>
-
-            <div className="border-l-4 border-blue-500 pl-4">
-              <h3 className="font-semibold text-gray-800 mb-2">🎯 Ana Hedefler</h3>
-              <div className="text-gray-700 text-sm">
-                {editData.main_goals || <span className="text-gray-400">Belirtilmemiş</span>}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="border-l-4 border-green-500 pl-4">
-              <h3 className="font-semibold text-gray-800 mb-2">💪 Rekabet Avantajı</h3>
-              <div className="text-gray-700 text-sm">
-                {editData.competitive_advantage || <span className="text-gray-400">Belirtilmemiş</span>}
-              </div>
-            </div>
-
-            <div className="border-l-4 border-purple-500 pl-4">
-              <h3 className="font-semibold text-gray-800 mb-2">📝 Görüşme Notları</h3>
-              <div className="text-gray-700 text-sm max-h-20 overflow-y-auto">
-                {editData.meeting_notes || <span className="text-gray-400">Not alınmamış</span>}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function ClientDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -423,11 +238,19 @@ export default function ClientDetailPage() {
           showEditButton={true}
         />
       ) : (
-        <ClientInfoEditor 
-          client={client} 
-          intakeForm={intakeForm} 
-          onUpdate={loadClientData}
-        />
+        <div className="bg-white rounded-lg shadow p-8 mb-8 text-center">
+          <div className="text-5xl mb-3">📋</div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Görüşme formu henüz doldurulmadı</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Müşteri için tüm analizleri başlatmadan önce görüşme formunu doldurun.
+          </p>
+          <Link
+            href={`/clients/${clientId}/intake`}
+            className="inline-block px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            ✏️ Görüşme Formunu Doldur
+          </Link>
+        </div>
       )}
 
       {/* Debug: Analiz Durumu */}
