@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function ClientAnalysisPage() {
   const params = useParams();
@@ -57,8 +58,6 @@ export default function ClientAnalysisPage() {
     { id: 'profile', label: '🟩 AI Profil Kartı', icon: '🎯' },
     { id: 'plan', label: '🟧 Gelişim Planı', icon: '📈' },
     { id: 'presentation', label: '🟥 Müşteri Sunumu', icon: '📊' },
-    { id: 'instagram', label: '📱 Instagram Bio', icon: '📱' },
-    { id: 'competitors', label: '🏆 Rakip Analizi', icon: '🏆' }
   ];
 
   return (
@@ -287,183 +286,36 @@ export default function ClientAnalysisPage() {
               </div>
             </div>
           )}
-
-          {activeTab === 'instagram' && data.instagramAnalysis && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-bold mb-4">📱 Instagram Bio Analizi</h2>
-              
-              {/* Instagram Profil Bilgileri */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
-                <h3 className="font-semibold text-gray-800 mb-4">📊 Profil İstatistikleri</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{data.instagramAnalysis.followers_count?.toLocaleString() || 0}</div>
-                    <div className="text-sm text-gray-600">Takipçi</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{data.instagramAnalysis.following_count?.toLocaleString() || 0}</div>
-                    <div className="text-sm text-gray-600">Takip</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{data.instagramAnalysis.posts_count?.toLocaleString() || 0}</div>
-                    <div className="text-sm text-gray-600">Gönderi</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg">
-                      {data.instagramAnalysis.is_verified ? '✅' : '❌'}
-                      {data.instagramAnalysis.is_private ? '🔒' : '🔓'}
-                    </div>
-                    <div className="text-sm text-gray-600">Durum</div>
-                  </div>
-                </div>
-                
-                {data.instagramAnalysis.bio_text && (
-                  <div className="mt-4 p-4 bg-white rounded border">
-                    <h4 className="font-semibold mb-2">Mevcut Bio:</h4>
-                    <p className="text-gray-700 whitespace-pre-wrap">{data.instagramAnalysis.bio_text}</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="border-l-4 border-green-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">✅ Bio Etkinliği</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.instagramAnalysis.bio_effectiveness }}
-                />
-              </div>
-              
-              <div className="border-l-4 border-red-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">❌ Eksik Elementler</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.instagramAnalysis.missing_elements }}
-                />
-              </div>
-              
-              <div className="border-l-4 border-blue-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">💡 İyileştirme Önerileri</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.instagramAnalysis.improvement_suggestions }}
-                />
-              </div>
-              
-              <div className="border-l-4 border-purple-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">🎯 Hedef Kitle Uyumu</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.instagramAnalysis.target_audience_alignment }}
-                />
-              </div>
-              
-              {data.instagramAnalysis.conversion_optimization && (
-                <div className="border-l-4 border-yellow-500 pl-4">
-                  <h3 className="font-semibold text-gray-800 mb-2">💰 Dönüşüm Optimizasyonu</h3>
-                  <div 
-                    className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: data.instagramAnalysis.conversion_optimization }}
-                  />
-                </div>
-              )}
-              
-              {data.instagramAnalysis.seo_keywords && (
-                <div className="border-l-4 border-indigo-500 pl-4">
-                  <h3 className="font-semibold text-gray-800 mb-2">🔍 SEO & Anahtar Kelimeler</h3>
-                  <div 
-                    className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: data.instagramAnalysis.seo_keywords }}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'instagram' && !data.instagramAnalysis && (
-            <div>
-              <h2 className="text-xl font-bold mb-4">📱 Instagram Bio Analizi</h2>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-purple-800">Instagram bio analizi henüz yapılmamış. Analizi başlatın.</p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'competitors' && data.competitorAnalysis && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-bold mb-4">🏆 Rakip Analizi & SWOT</h2>
-              
-              {/* Rakip Profilleri */}
-              {data.competitorAnalysis.competitors_data && data.competitorAnalysis.competitors_data.competitors && (
-                <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-6 border border-orange-200">
-                  <h3 className="font-semibold text-gray-800 mb-4">📊 Rakip Profilleri</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {data.competitorAnalysis.competitors_data.competitors
-                      .filter((comp: any) => !comp.error)
-                      .map((competitor: any, index: number) => (
-                      <div key={index} className="bg-white rounded-lg p-4 border">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-gray-800">@{competitor.username}</h4>
-                          {competitor.is_verified && <span className="text-blue-500">✅</span>}
-                        </div>
-                        <div className="text-sm text-gray-600 space-y-1">
-                          <div>👥 {competitor.followers?.toLocaleString() || 0} takipçi</div>
-                          <div>📸 {competitor.posts?.toLocaleString() || 0} gönderi</div>
-                          <div>📂 {competitor.category || 'Diğer'}</div>
-                        </div>
-                        {competitor.bio && (
-                          <div className="mt-2 text-xs text-gray-500 truncate">
-                            "{competitor.bio.substring(0, 50)}..."
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              <div className="border-l-4 border-blue-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">📋 SWOT Analizi</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.competitorAnalysis.swot_analysis }}
-                />
-              </div>
-              
-              <div className="border-l-4 border-green-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">🎯 Rekabetçi Konumlandırma</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.competitorAnalysis.competitive_positioning }}
-                />
-              </div>
-              
-              <div className="border-l-4 border-purple-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">🚀 Pazar Fırsatları</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.competitorAnalysis.market_opportunities }}
-                />
-              </div>
-              
-              <div className="border-l-4 border-orange-500 pl-4">
-                <h3 className="font-semibold text-gray-800 mb-2">💡 Farklılaşma Stratejisi</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.competitorAnalysis.differentiation_strategy }}
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'competitors' && !data.competitorAnalysis && (
-            <div>
-              <h2 className="text-xl font-bold mb-4">🏆 Rakip Analizi</h2>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-orange-800">Rakip analizi henüz yapılmamış. Görüşme formunda rakip bilgilerini ekleyip analizi başlatın.</p>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Bio + Rakip analizleri ayrı sayfalarda — link bırakıyoruz */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Link
+            href={`/clients/${clientId}/bio-analysis`}
+            className="bg-white rounded-lg shadow p-5 hover:shadow-md transition-shadow border-l-4 border-purple-500"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-500">İnteraktif analiz</div>
+                <div className="text-lg font-semibold text-gray-900">📱 Instagram Bio Analizi</div>
+              </div>
+              <span className="text-purple-600">→</span>
+            </div>
+          </Link>
+          <Link
+            href={`/clients/${clientId}/competitor-analysis`}
+            className="bg-white rounded-lg shadow p-5 hover:shadow-md transition-shadow border-l-4 border-orange-500"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-500">İnteraktif analiz</div>
+                <div className="text-lg font-semibold text-gray-900">🏆 Rakip Analizi & SWOT</div>
+              </div>
+              <span className="text-orange-600">→</span>
+            </div>
+          </Link>
+        </div>
+
       </div>
     </div>
   );
