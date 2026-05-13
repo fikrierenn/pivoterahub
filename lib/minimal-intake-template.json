@@ -1,0 +1,75 @@
+[
+  {
+    "category": "temel_bilgiler",
+    "category_label": "📋 Temel Bilgiler",
+    "questions": [
+      {
+        "key": "business_name",
+        "text": "İş/Marka adı nedir?",
+        "type": "text",
+        "required": true,
+        "placeholder": "Örn: Bursa Lüks Emlak"
+      },
+      {
+        "key": "sector",
+        "text": "Sektörünüz nedir?",
+        "type": "text",
+        "required": true,
+        "placeholder": "Örn: Emlak, Gelinlik, Wellness"
+      },
+      {
+        "key": "location",
+        "text": "Hangi şehir/bölgede hizmet veriyorsunuz?",
+        "type": "text",
+        "required": true,
+        "placeholder": "Örn: Nilüfer, Bursa"
+      }
+    ]
+  },
+  {
+    "category": "hedefler",
+    "category_label": "🎯 Hedefler",
+    "questions": [
+      {
+        "key": "main_goals",
+        "text": "Önümüzdeki 3 ay için ana hedefiniz nedir?",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Örn: Takipçiyi 3.000'den 10.000'e çıkarmak ve ayda 2 satış yapmak"
+      }
+    ]
+  },
+  {
+    "category": "rakipler",
+    "category_label": "🏆 Rakipler",
+    "questions": [
+      {
+        "key": "competitors",
+        "text": "Ana rakiplerinizin Instagram hesapları",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "Örn:\n@ahmetmlak\n@bursaevleri\n@niluferemlak"
+      },
+      {
+        "key": "competitive_advantage",
+        "text": "Rakiplerinize göre en büyük farkınız nedir?",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "Örn: Bölgeyi derinlemesine biliyorum"
+      }
+    ]
+  },
+  {
+    "category": "notlar",
+    "category_label": "📝 Notlar",
+    "questions": [
+      {
+        "key": "meeting_notes",
+        "text": "Görüşme notları ve ek bilgiler",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "Buraya görüşme sırasında aldığınız notları, özel durumları, stratejik kararları yazabilirsiniz..."
+      }
+    ]
+  }
+]
