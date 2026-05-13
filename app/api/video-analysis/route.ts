@@ -14,6 +14,7 @@ import { createTempDir } from '@/lib/ffmpeg';
 import { supabase } from '@/lib/supabase';
 import { enforceRateLimit } from '@/lib/rateLimitGuard';
 import { logger } from '@/lib/logger';
+import { parseFormData } from '@/lib/utils/parseFormData';
 
 export async function POST(request: NextRequest) {
   const limited = await enforceRateLimit(request, 'ANALYZE');
@@ -29,43 +30,60 @@ export async function POST(request: NextRequest) {
     let urlForStorage: string;
 
     if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData();
-      const file = formData.get('file');
-
-      if (!file || !(file instanceof File)) {
+      let parsed: Awaited<ReturnType<typeof parseFormData>>;
+      try {
+        parsed = await parseFormData(request);
+      } catch (parseErr) {
+        const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+        logger.error('FormData parse failed', parseErr instanceof Error ? parseErr : new Error(msg));
         return NextResponse.json(
-          { error: 'Video dosyasi bulunamadi' },
+          { error: `Dosya parse hatası: ${msg}` },
           { status: 400 }
         );
       }
 
-      const metricsRaw = formData.get('metrics');
-      const hashtagsRaw = formData.get('hashtags');
-      const publishedAtRaw = (formData.get('published_at') as string | null) || undefined;
+      if (!parsed.file) {
+        return NextResponse.json({ error: 'Video dosyası bulunamadı' }, { status: 400 });
+      }
+
+      const { fields } = parsed;
+      const publishedAtRaw = fields.published_at || undefined;
       const publishedAt = publishedAtRaw ? new Date(publishedAtRaw).toISOString() : undefined;
 
       validatedData = VideoAnalysisFormSchema.parse({
-        client_id: formData.get('client_id'),
-        platform: formData.get('platform'),
-        external_id: formData.get('external_id') || undefined,
+        client_id: fields.client_id,
+        platform: fields.platform,
+        external_id: fields.external_id || undefined,
         published_at: publishedAt,
-        duration_sec: Number(formData.get('duration_sec')),
-        captions: formData.get('captions') || undefined,
-        hashtags: hashtagsRaw ? JSON.parse(String(hashtagsRaw)) : [],
-        metrics: metricsRaw ? JSON.parse(String(metricsRaw)) : undefined,
+        duration_sec: Number(fields.duration_sec),
+        captions: fields.captions || undefined,
+        hashtags: fields.hashtags ? JSON.parse(fields.hashtags) : [],
+        metrics: fields.metrics ? JSON.parse(fields.metrics) : undefined,
       });
 
-      const arrayBuffer = await file.arrayBuffer();
-      videoBuffer = Buffer.from(arrayBuffer);
-      filename = file.name || filename;
+      videoBuffer = parsed.file.buffer;
+      filename = parsed.file.filename || filename;
       urlForStorage = `local://${filename}`;
     } else {
       const body = await request.json();
       validatedData = VideoAnalysisRequestSchema.parse(body);
-      urlForStorage = validatedData.url;
+      urlForStorage = (validatedData as VideoAnalysisRequest).url;
 
       logger.info('downloading video from url');
-      videoBuffer = await downloadVideo((validatedData as VideoAnalysisRequest).url);
+      try {
+        videoBuffer = await downloadVideo((validatedData as VideoAnalysisRequest).url);
+      } catch (downloadErr) {
+        logger.error('Video download failed', downloadErr instanceof Error ? downloadErr : new Error(String(downloadErr)));
+        const isSocialMedia = /instagram\.com|tiktok\.com|youtube\.com|youtu\.be|twitter\.com|x\.com/.test(urlForStorage);
+        return NextResponse.json(
+          {
+            error: isSocialMedia
+              ? 'Instagram/TikTok URL\'lerinden video indirilemez. Videoyu cihazınıza indirip dosya olarak yükleyin.'
+              : 'Video URL\'sinden indirilemedi. Dosya olarak yüklemeyi deneyin.',
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const client = await getClientById(validatedData.client_id);
@@ -257,15 +275,21 @@ export async function POST(request: NextRequest) {
 
     if (err.name === 'ZodError') {
       return NextResponse.json(
-        { error: 'Invalid request data', details: err.errors },
+        { error: 'Geçersiz form verisi', details: err.errors },
         { status: 400 }
       );
     }
 
-    return NextResponse.json(
-      { error: 'Video analizi tamamlanamadı' },
-      { status: 500 }
-    );
+    const msg = err.message ?? '';
+    const is503 = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
+    const knownPrefixes = ['Transkript alınamadı', 'Failed to insert video'];
+    const isKnown = knownPrefixes.some(p => msg.startsWith(p));
+
+    const userMsg = is503
+      ? 'AI modeli şu an aşırı yüklü (503). 1-2 dakika bekleyip tekrar deneyin.'
+      : isKnown ? msg : 'Video analizi tamamlanamadı. Lütfen tekrar deneyin.';
+
+    return NextResponse.json({ error: userMsg }, { status: is503 ? 503 : 500 });
   } finally {
     if (tempCleanup) await tempCleanup().catch(() => undefined);
   }

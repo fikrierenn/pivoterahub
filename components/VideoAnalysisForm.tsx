@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 interface VideoAnalysisFormProps {
   isOpen: boolean;
@@ -38,6 +39,8 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
   const [loadingClients, setLoadingClients] = useState(false);
   const [loadingMetadata, setLoadingMetadata] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [clientLoadError, setClientLoadError] = useState(false);
 
   useEffect(() => {
     if (isOpen && !clientId) {
@@ -53,18 +56,17 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
 
   const loadClients = async () => {
     setLoadingClients(true);
+    setClientLoadError(false);
     try {
       const response = await fetch('/api/clients');
-
       if (response.ok) {
         const data = await response.json();
         setClients(Array.isArray(data) ? data : []);
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        alert(`Musteri listesi yuklenemedi: ${response.status} - ${errorData.error || response.statusText}`);
+        setClientLoadError(true);
       }
-    } catch (error) {
-      alert('Musteri listesi yuklenirken hata olustu: ' + error);
+    } catch {
+      setClientLoadError(true);
     } finally {
       setLoadingClients(false);
     }
@@ -228,8 +230,6 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
       });
       setVideoFile(null);
 
-      onSuccess?.();
-
     } catch (error: any) {
       console.error('Video analysis error:', error);
       alert(error.message || 'Video analizi sirasinda hata olustu');
@@ -246,6 +246,7 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
 
   const closeReport = () => {
     setAnalysisResult(null);
+    onSuccess?.();
     onClose();
   };
 
@@ -255,17 +256,24 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Video Analizi</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            {!loading && (
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
 
-          {analysisResult ? (
+          {loading ? (
+            <div className="py-16 flex flex-col items-center gap-4 text-center">
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div>
+                <p className="font-medium text-zinc-800">Video analiz ediliyor...</p>
+                <p className="text-sm text-zinc-500 mt-1">Gemini transkripsiyon + AI analiz çalışıyor. 1–3 dakika sürebilir.</p>
+              </div>
+            </div>
+          ) : analysisResult ? (
             <div className="space-y-6">
               <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
                 Video analizi tamamlandi. Rapor asagida.
@@ -363,6 +371,15 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
               </div>
 
               <div className="flex gap-3 pt-2">
+                {analysisResult?.video?.id && (
+                  <Link
+                    href={`/videos/${analysisResult.video.id}`}
+                    onClick={closeReport}
+                    className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700 text-center text-sm font-medium"
+                  >
+                    Tam Rapor &amp; PDF
+                  </Link>
+                )}
                 <button
                   type="button"
                   onClick={closeReport}
@@ -373,287 +390,190 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-            {!clientId && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Musteri Secin
-                </label>
-                <select
-                  value={formData.client_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, client_id: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  disabled={loadingClients}
-                >
-                  <option value="">
-                    {loadingClients ? 'Yukleniyor...' : `Musteri secin (${clients.length} musteri)`}
-                  </option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Video Kaynak Tipi
-              </label>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="radio"
-                    name="videoSource"
-                    value="url"
-                    checked={videoSource === 'url'}
-                    onChange={() => handleSourceChange('url')}
-                  />
-                  URL
-                </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="radio"
-                    name="videoSource"
-                    value="file"
-                    checked={videoSource === 'file'}
-                    onChange={() => handleSourceChange('file')}
-                  />
-                  Lokal Dosya
-                </label>
-              </div>
-            </div>
-
-            {videoSource === 'url' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Video URL
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={formData.url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://instagram.com/p/..."
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fetchVideoMetadata(formData.url)}
-                    disabled={!formData.url || loadingMetadata}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loadingMetadata ? 'Yukleniyor...' : 'Otomatik Doldur'}
-                  </button>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Müşteri seçimi */}
+              {!clientId && (
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">Müşteri</label>
+                  {clientLoadError ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-red-600">Yüklenemedi</span>
+                      <button type="button" onClick={loadClients} className="text-sm text-blue-600 hover:underline">
+                        Tekrar dene
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.client_id}
+                      onChange={(e) => setFormData(prev => ({ ...prev, client_id: e.target.value }))}
+                      className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                      disabled={loadingClients}
+                    >
+                      <option value="">{loadingClients ? 'Yükleniyor...' : 'Müşteri seçin'}</option>
+                      {clients.map((client) => (
+                        <option key={client.id} value={client.id}>{client.name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  URL girdikten sonra "Otomatik Doldur" ile video bilgilerini cekebilirsiniz
-                </p>
-              </div>
-            ) : (
+              )}
+
+              {/* Video kaynağı */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Video Dosyasi
-                </label>
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-                  className="w-full"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Buyuk dosyalar yuklenirken zaman alabilir
-                </p>
-              </div>
-            )}
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Video</label>
+                <div className="flex gap-3 mb-2">
+                  {(['url', 'file'] as const).map((src) => (
+                    <label key={src} className="flex items-center gap-1.5 text-sm text-zinc-600 cursor-pointer">
+                      <input type="radio" name="videoSource" value={src} checked={videoSource === src} onChange={() => handleSourceChange(src)} />
+                      {src === 'url' ? 'URL' : 'Dosya yükle'}
+                    </label>
+                  ))}
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Platform
-                </label>
-                <select
-                  value={formData.platform}
-                  onChange={(e) => setFormData(prev => ({ ...prev, platform: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="instagram">Instagram</option>
-                  <option value="tiktok">TikTok</option>
-                  <option value="youtube">YouTube</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sure (saniye)
-                </label>
-                <input
-                  type="number"
-                  value={formData.duration_sec}
-                  onChange={(e) => setFormData(prev => ({ ...prev, duration_sec: parseInt(e.target.value) || 30 }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="1"
-                  max="3600"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Yayin Tarihi
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.published_at}
-                onChange={(e) => setFormData(prev => ({ ...prev, published_at: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Aciklama/Caption
-              </label>
-              <textarea
-                value={formData.captions}
-                onChange={(e) => setFormData(prev => ({ ...prev, captions: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-                placeholder="Video aciklamasi..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hashtag'ler
-              </label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={hashtagInput}
-                  onChange={(e) => setHashtagInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleHashtagAdd())}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="#hashtag ekle"
-                />
-                <button
-                  type="button"
-                  onClick={handleHashtagAdd}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Ekle
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.hashtags.map((hashtag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                  >
-                    #{hashtag}
+                {videoSource === 'url' ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={formData.url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
+                      className="flex-1 px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://instagram.com/p/..."
+                    />
                     <button
                       type="button"
-                      onClick={() => handleHashtagRemove(hashtag)}
-                      className="ml-2 text-blue-600 hover:text-blue-800"
+                      onClick={() => fetchVideoMetadata(formData.url)}
+                      disabled={!formData.url || loadingMetadata}
+                      className="px-3 py-2 bg-zinc-100 text-zinc-700 rounded-lg text-sm hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      x
+                      {loadingMetadata ? '...' : 'Otomatik doldur'}
                     </button>
-                  </span>
-                ))}
+                  </div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                    className="w-full text-sm"
+                  />
+                )}
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Performans Metrikleri (Opsiyonel)
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {/* Platform + Süre */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Izlenme</label>
-                  <input
-                    type="number"
-                    value={formData.metrics.views}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      metrics: { ...prev.metrics, views: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">Platform</label>
+                  <select
+                    value={formData.platform}
+                    onChange={(e) => setFormData(prev => ({ ...prev, platform: e.target.value }))}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="instagram">Instagram</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="youtube">YouTube</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Begeni</label>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">Süre (sn)</label>
                   <input
                     type="number"
-                    value={formData.metrics.likes}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      metrics: { ...prev.metrics, likes: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">Yorum</label>
-                  <input
-                    type="number"
-                    value={formData.metrics.comments}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      metrics: { ...prev.metrics, comments: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">Paylasim</label>
-                  <input
-                    type="number"
-                    value={formData.metrics.shares}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      metrics: { ...prev.metrics, shares: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-600 mb-1">Kaydetme</label>
-                  <input
-                    type="number"
-                    value={formData.metrics.saves}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      metrics: { ...prev.metrics, saves: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
+                    value={formData.duration_sec}
+                    onChange={(e) => setFormData(prev => ({ ...prev, duration_sec: parseInt(e.target.value) || 30 }))}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="1" max="3600"
                   />
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-3 pt-4">
+              {/* Opsiyonel detaylar toggle */}
               <button
                 type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                onClick={() => setShowAdvanced(p => !p)}
+                className="text-sm text-zinc-500 hover:text-zinc-700 flex items-center gap-1"
               >
-                Iptal
+                {showAdvanced ? '▼' : '▶'} Opsiyonel detaylar (caption, hashtag, metrik)
               </button>
-              <button
-                type="submit"
-                disabled={submitDisabled}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Analiz Ediliyor...' : 'Analizi Baslat'}
-              </button>
-            </div>
+
+              {showAdvanced && (
+                <div className="space-y-4 border border-zinc-100 rounded-lg p-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">Yayın Tarihi</label>
+                    <input
+                      type="datetime-local"
+                      value={formData.published_at}
+                      onChange={(e) => setFormData(prev => ({ ...prev, published_at: e.target.value }))}
+                      className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">Açıklama / Caption</label>
+                    <textarea
+                      value={formData.captions}
+                      onChange={(e) => setFormData(prev => ({ ...prev, captions: e.target.value }))}
+                      className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={2}
+                      placeholder="Video açıklaması..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">Hashtag'ler</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={hashtagInput}
+                        onChange={(e) => setHashtagInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleHashtagAdd())}
+                        className="flex-1 px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="#hashtag ekle"
+                      />
+                      <button type="button" onClick={handleHashtagAdd} className="px-3 py-2 bg-zinc-100 text-zinc-700 rounded-lg text-sm hover:bg-zinc-200">
+                        Ekle
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {formData.hashtags.map((hashtag, index) => (
+                        <span key={index} className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-xs">
+                          #{hashtag}
+                          <button type="button" onClick={() => handleHashtagRemove(hashtag)} className="ml-1.5 text-blue-400 hover:text-blue-700">×</button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">Performans Metrikleri</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {(['views', 'likes', 'comments', 'shares', 'saves'] as const).map((metric) => (
+                        <div key={metric}>
+                          <label className="block text-xs text-zinc-500 mb-1 capitalize">{metric === 'views' ? 'Görüntü' : metric === 'likes' ? 'Beğeni' : metric === 'comments' ? 'Yorum' : metric === 'shares' ? 'Paylaşım' : 'Kaydet'}</label>
+                          <input
+                            type="number"
+                            value={formData.metrics[metric]}
+                            onChange={(e) => setFormData(prev => ({ ...prev, metrics: { ...prev.metrics, [metric]: parseInt(e.target.value) || 0 } }))}
+                            className="w-full px-2 py-1.5 border border-zinc-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            min="0"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-zinc-200 text-zinc-700 rounded-lg text-sm hover:bg-zinc-50">
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitDisabled}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Analiz ediliyor...' : 'Analizi Başlat'}
+                </button>
+              </div>
             </form>
           )}
         </div>
