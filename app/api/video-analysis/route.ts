@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: err.message || 'Internal server error' },
+      { error: 'Video analizi tamamlanamadı' },
       { status: 500 }
     );
   } finally {
