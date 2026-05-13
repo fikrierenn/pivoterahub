@@ -59,24 +59,29 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    console.log('🔍 Fetching clients from database...');
+    
     const { data, error } = await supabase
       .from('clients')
       .select('*')
       .order('created_at', { ascending: false });
 
+    console.log('📊 Database response:', { data, error });
+
     if (error) {
-      console.error('Database error:', error);
+      console.error('❌ Database error:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch clients' },
+        { error: 'Failed to fetch clients', details: error.message },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error fetching clients:', error);
+    console.log(`✅ Successfully fetched ${data?.length || 0} clients`);
+    return NextResponse.json(data || []);
+  } catch (error: any) {
+    console.error('❌ Error fetching clients:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }

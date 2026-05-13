@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { analyzeClientIntake } from '@/lib/llm/client-analysis';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const clientId = params.id;
+    const { id } = await params;
+    const clientId = id;
     const body = await request.json();
 
     // Get client info
@@ -21,12 +21,13 @@ export async function POST(
       return NextResponse.json({ error: 'Client not found' }, { status: 404 });
     }
 
-    // Save intake form
+    // Save intake form (JSONB format) - UPSERT to handle updates
     const { data: intakeForm, error: intakeError } = await supabase
       .from('client_intake_forms')
-      .insert({
+      .upsert({
         client_id: clientId,
-        ...body,
+        answers: body.answers || body, // Support both formats
+        updated_at: new Date().toISOString()
       })
       .select()
       .single();
@@ -36,33 +37,71 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to save intake form' }, { status: 500 });
     }
 
-    // Analyze with AI
-    const analysisResult = await analyzeClientIntake({
-      client_name: client.name,
-      ...body,
-    });
+    // Müşteri durumunu 'prospect' yap (görüşme formu dolduruldu)
+    await supabase
+      .from('clients')
+      .update({ status: 'prospect' })
+      .eq('id', clientId);
 
-    // Save analysis
-    const { data: analysis, error: analysisError } = await supabase
-      .from('client_analysis')
-      .insert({
-        client_id: clientId,
-        intake_form_id: intakeForm.id,
-        ...analysisResult,
+    return NextResponse.json({
+      success: true,
+      intake_form: intakeForm,
+      message: 'Görüşme formu başarıyla kaydedildi'
+    });
+    
+  } catch (error: any) {
+    console.error('Error processing intake:', error);
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const clientId = id;
+    const body = await request.json();
+
+    // Get existing intake form
+    const { data: existingForm } = await supabase
+      .from('client_intake_forms')
+      .select('*')
+      .eq('client_id', clientId)
+      .single();
+
+    if (!existingForm) {
+      return NextResponse.json({ error: 'Intake form not found' }, { status: 404 });
+    }
+
+    // Update intake form
+    const { data: updatedForm, error: updateError } = await supabase
+      .from('client_intake_forms')
+      .update({
+        answers: body.answers,
+        updated_at: new Date().toISOString()
       })
+      .eq('client_id', clientId)
       .select()
       .single();
 
-    if (analysisError) {
-      console.error('Error saving analysis:', analysisError);
+    if (updateError) {
+      console.error('Error updating intake form:', updateError);
+      return NextResponse.json({ error: 'Failed to update intake form' }, { status: 500 });
     }
 
     return NextResponse.json({
-      intake_form: intakeForm,
-      analysis: analysis,
+      success: true,
+      intake_form: updatedForm,
+      message: 'Müşteri bilgileri başarıyla güncellendi'
     });
+    
   } catch (error: any) {
-    console.error('Error processing intake:', error);
+    console.error('Error updating intake:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

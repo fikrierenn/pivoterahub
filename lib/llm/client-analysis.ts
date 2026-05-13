@@ -1,4 +1,4 @@
-import { openai } from '@/lib/openai';
+import { generateJson } from '@/lib/llm/gemini';
 import { z } from 'zod';
 
 const ClientAnalysisSchema = z.object({
@@ -101,22 +101,7 @@ Lütfen bu müşteriyi detaylı analiz et ve aşağıdaki formatta JSON döndür
 - initial_report: İlk dokunuş raporu (Markdown formatında, müşteriye sunulacak profesyonel rapor)
 `;
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: prompt },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-    });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('No response from OpenAI');
-    }
-
-    const parsed = JSON.parse(content);
+    const parsed = await generateJson(SYSTEM_PROMPT, prompt);
     const validated = ClientAnalysisSchema.parse(parsed);
 
     return validated;

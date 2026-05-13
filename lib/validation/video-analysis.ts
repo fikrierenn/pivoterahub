@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
-export const VideoAnalysisRequestSchema = z.object({
+const VideoAnalysisBaseSchema = z.object({
   client_id: z.string().uuid(),
   platform: z.enum(['instagram', 'tiktok', 'youtube']),
-  url: z.string().url(),
   external_id: z.string().optional(),
   published_at: z.string().datetime().optional(),
   duration_sec: z.number().int().positive(),
@@ -18,4 +17,11 @@ export const VideoAnalysisRequestSchema = z.object({
   }).optional(),
 });
 
+export const VideoAnalysisRequestSchema = VideoAnalysisBaseSchema.extend({
+  url: z.string().url(),
+});
+
+export const VideoAnalysisFormSchema = VideoAnalysisBaseSchema;
+
 export type VideoAnalysisRequest = z.infer<typeof VideoAnalysisRequestSchema>;
+export type VideoAnalysisFormRequest = z.infer<typeof VideoAnalysisFormSchema>;

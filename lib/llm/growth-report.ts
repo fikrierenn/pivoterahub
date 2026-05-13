@@ -1,4 +1,4 @@
-import { openai } from '@/lib/openai';
+import { generateJson } from '@/lib/llm/gemini';
 import { z } from 'zod';
 
 // Growth report response schema
@@ -71,27 +71,12 @@ export function formatGrowthReportInput(input: GrowthReportInput): string {
 
 export async function generateGrowthReport(input: GrowthReportInput): Promise<GrowthReportResult> {
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: formatGrowthReportInput(input) },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-    });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('No response from OpenAI');
-    }
-
-    const parsed = JSON.parse(content);
+    const parsed = await generateJson(SYSTEM_PROMPT, formatGrowthReportInput(input));
     const validated = GrowthReportSchema.parse(parsed);
 
     return validated;
   } catch (error) {
-    console.error('Error generating growth report with LLM:', error);
+    console.error('Error generating growth report with Gemini:', error);
     throw new Error('Failed to generate growth report with AI');
   }
 }

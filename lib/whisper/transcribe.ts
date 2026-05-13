@@ -1,40 +1,38 @@
-import { openai } from '@/lib/openai';
-import fs from 'fs';
-import path from 'path';
-import { promisify } from 'util';
-
-const writeFile = promisify(fs.writeFile);
-const unlink = promisify(fs.unlink);
+import { generateJsonWithPartsTranscribe } from '@/lib/llm/gemini';
 
 export async function transcribeVideo(videoBuffer: Buffer, filename: string): Promise<string> {
-  let tempFilePath: string | null = null;
-
   try {
-    // Create temp file
-    const tempDir = path.join(process.cwd(), 'tmp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    const base64 = videoBuffer.toString('base64');
+    const mimeType = filename.toLowerCase().endsWith('.mp4') ? 'video/mp4' : 'application/octet-stream';
+
+    const parsed = await generateJsonWithPartsTranscribe(
+      'Sen bir transkripsiyon motorusun. Sadece verilen video/audio icin dogru transkripti JSON olarak dondur.',
+      'JSON formatinda dondur: {"transcript": "..."}',
+      [
+        {
+          inlineData: {
+            data: base64,
+            mimeType,
+          },
+        },
+      ]
+    );
+
+    if (!parsed || typeof parsed.transcript !== 'string') {
+      throw new Error('Invalid transcription response');
     }
 
-    tempFilePath = path.join(tempDir, `${Date.now()}-${filename}`);
-    await writeFile(tempFilePath, videoBuffer);
-
-    // Transcribe with Whisper
-    const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(tempFilePath),
-      model: 'whisper-1',
-      language: 'tr', // Turkish
-    });
-
-    return transcription.text;
+    return parsed.transcript;
   } catch (error) {
-    console.error('Error transcribing video:', error);
+    const err = error as { message?: string; status?: number; statusText?: string; errorDetails?: unknown; cause?: unknown };
+    console.error('Error transcribing video:', {
+      message: err?.message,
+      status: err?.status,
+      statusText: err?.statusText,
+      errorDetails: err?.errorDetails,
+      cause: err?.cause,
+    });
     throw new Error('Failed to transcribe video');
-  } finally {
-    // Clean up temp file
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      await unlink(tempFilePath);
-    }
   }
 }
 

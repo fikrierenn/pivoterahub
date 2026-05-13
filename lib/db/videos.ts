@@ -11,6 +11,7 @@ export interface Video {
   captions: string | null;
   hashtags: string[];
   transcript: string | null;
+  ai_analysis?: Record<string, unknown> | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
