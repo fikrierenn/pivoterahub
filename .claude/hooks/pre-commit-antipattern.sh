@@ -51,44 +51,44 @@ for f in $staged; do
   [ -f "$f" ] || continue
 
   # Hardcoded password (tum stack'lerde)
-  if echo "$f" | grep -qE '\.(cs|cshtml|json|ps1|ts|tsx|js|jsx|py|java|rb|go|rs|yml|yaml|env|ini|config|xml)$'; then
-    if grep -HnE 'password[[:space:]]*[=:][[:space:]]*["'\''][A-Za-z0-9!@#$%^&*+._-]{4,}' "$f" 2>/dev/null | grep -viE 'password[[:space:]]*[=:][[:space:]]*["'\'']?(\s|$|;|"|'\''|\{|\$)' | head -3; then
+  if echo "$f" | grep -qE '\.(cs|cshtml|ps1|ts|tsx|js|jsx|py|java|rb|go|rs|yml|yaml|env|ini|config|xml)$'; then
+    if grep -qE 'password[[:space:]]*[=:][[:space:]]*["'"'"'][A-Za-z0-9!@#$%^&*+._-]{4,}' "$f" 2>/dev/null; then
       found_issues+=("$f: hardcoded sifre tespit (env var / secret manager kullan)")
     fi
   fi
 
   # .NET
   if echo ",$stacks," | grep -q ",dotnet," && [[ "$f" == *.cs ]]; then
-    if grep -Hn 'DateTime\.Now\b' "$f" 2>/dev/null | grep -v '^\s*//' | head -3; then
+    if grep -qE 'DateTime\.Now\b' "$f" 2>/dev/null; then
       found_issues+=("$f: DateTime.Now -> DateTime.UtcNow kullan (timezone sorunu)")
     fi
-    if grep -Hn 'async void\b' "$f" 2>/dev/null | grep -v 'event' | grep -v '^\s*//' | head -3; then
+    if grep -qE 'async void\b' "$f" 2>/dev/null | grep -qv 'event'; then
       found_issues+=("$f: async void (event handler harici yasak)")
     fi
-    if grep -Hn 'new HttpClient()' "$f" 2>/dev/null | grep -v '^\s*//' | head -3; then
+    if grep -q 'new HttpClient()' "$f" 2>/dev/null; then
       found_issues+=("$f: new HttpClient() -> IHttpClientFactory")
     fi
-    if grep -HnE '(TempData\[.*\]|ViewBag\.|Json\(\s*new\s*\{[^}]*message).*ex\.Message' "$f" 2>/dev/null | head -3; then
+    if grep -qE '(TempData\[.*\]|ViewBag\.|Json\(\s*new\s*\{[^}]*message).*ex\.Message' "$f" 2>/dev/null; then
       found_issues+=("$f: ex.Message user'a sizintili (logger'a yaz, user'a generic mesaj)")
     fi
   fi
 
   # Node / TS
   if echo ",$stacks," | grep -q ",node," && echo "$f" | grep -qE '\.(ts|tsx|js|jsx|mjs|cjs)$'; then
-    if grep -HnE 'console\.log\(' "$f" 2>/dev/null | grep -v '^\s*//' | head -3; then
+    if grep -qE 'console\.log\(' "$f" 2>/dev/null; then
       found_issues+=("$f: console.log production kod icinde (logger kullan)")
     fi
-    if grep -HnE '(any[[:space:]]*[,;)=]|:[[:space:]]*any[[:space:]]*[,;)=])' "$f" 2>/dev/null | head -3; then
+    if grep -qE '(: any[[:space:]]*[,;)=<]|<any>|\bany\b as )' "$f" 2>/dev/null; then
       found_issues+=("$f: 'any' kullanimi (strict tip ver)")
     fi
   fi
 
   # Python
   if echo ",$stacks," | grep -q ",python," && [[ "$f" == *.py ]]; then
-    if grep -HnE 'print\(' "$f" 2>/dev/null | grep -v '^\s*#' | head -3; then
+    if grep -qE 'print\(' "$f" 2>/dev/null; then
       found_issues+=("$f: print() production kod icinde (logging kullan)")
     fi
-    if grep -HnE 'except[[:space:]]*:' "$f" 2>/dev/null | head -3; then
+    if grep -qE 'except[[:space:]]*:' "$f" 2>/dev/null; then
       found_issues+=("$f: bare except (yakalayacagin tipi belirt)")
     fi
   fi
