@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { VideoAnalysisFormSchema, VideoAnalysisRequestSchema } from '@/lib/validation/video-analysis';
+import { VideoAnalysisFormSchema, VideoAnalysisRequestSchema, VideoAnalysisRequest, VideoAnalysisFormRequest } from '@/lib/validation/video-analysis';
 import { getClientById, getClientProfileSummary } from '@/lib/db/clients';
 import { insertVideo } from '@/lib/db/videos';
 import { insertVideoScore, getPreviousScores } from '@/lib/db/video-scores';
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const contentType = request.headers.get('content-type') || '';
-    let validatedData: any;
+    let validatedData: VideoAnalysisRequest | VideoAnalysisFormRequest;
     let videoBuffer: Buffer;
     let filename = `video-${Date.now()}.mp4`;
     let urlForStorage: string;
@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
       validatedData = VideoAnalysisRequestSchema.parse(body);
       urlForStorage = validatedData.url;
 
-      console.log('Downloading video...');
-      videoBuffer = await downloadVideo(validatedData.url);
+      logger.info('downloading video from url');
+      videoBuffer = await downloadVideo((validatedData as VideoAnalysisRequest).url);
     }
 
     const client = await getClientById(validatedData.client_id);
@@ -127,7 +127,6 @@ export async function POST(request: NextRequest) {
     }
 
     const videoBase64 = videoBuffer.toString('base64');
-    console.log('Video base64 length:', videoBase64.length);
 
     logger.info('running gemini video analysis');
     const analysisResult = await analyzeVideo({

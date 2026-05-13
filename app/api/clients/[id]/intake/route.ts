@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { enforceRateLimit } from '@/lib/rateLimitGuard';
+import { logger } from '@/lib/logger';
 
 export async function POST(
   request: NextRequest,
@@ -37,7 +38,7 @@ export async function POST(
       .single();
 
     if (intakeError) {
-      console.error('Error saving intake form:', intakeError);
+      logger.error('intake save error', new Error(intakeError.message));
       return NextResponse.json({ error: 'Failed to save intake form' }, { status: 500 });
     }
 
@@ -53,10 +54,10 @@ export async function POST(
       message: 'Görüşme formu başarıyla kaydedildi'
     });
     
-  } catch (error: any) {
-    console.error('Error processing intake:', error);
+  } catch (error: unknown) {
+    logger.error('intake post error', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -66,6 +67,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const limited = await enforceRateLimit(request, 'DEFAULT');
+  if (limited) return limited;
+
   try {
     const { id } = await params;
     const clientId = id;
@@ -94,7 +98,7 @@ export async function PUT(
       .single();
 
     if (updateError) {
-      console.error('Error updating intake form:', updateError);
+      logger.error('intake update error', new Error(updateError.message));
       return NextResponse.json({ error: 'Failed to update intake form' }, { status: 500 });
     }
 
@@ -104,10 +108,10 @@ export async function PUT(
       message: 'Müşteri bilgileri başarıyla güncellendi'
     });
     
-  } catch (error: any) {
-    console.error('Error updating intake:', error);
+  } catch (error: unknown) {
+    logger.error('intake put error', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

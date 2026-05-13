@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { z } from 'zod';
 import { enforceRateLimit } from '@/lib/rateLimitGuard';
+import { logger } from '@/lib/logger';
 
 const ClientSchema = z.object({
   name: z.string().min(1),
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Database error:', error);
+      logger.error('client create db error', new Error(error.message));
       return NextResponse.json(
         { error: 'Failed to create client' },
         { status: 500 }
@@ -44,12 +45,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data, { status: 201 });
-  } catch (error: any) {
-    console.error('Error creating client:', error);
+  } catch (error: unknown) {
+    const err = error as { name?: string; message?: string; errors?: unknown };
+    logger.error('client create error', error instanceof Error ? error : new Error(String(error)));
 
-    if (error.name === 'ZodError') {
+    if (err.name === 'ZodError') {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: err.errors },
         { status: 400 }
       );
     }
@@ -61,31 +63,29 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'DEFAULT');
+  if (limited) return limited;
+
   try {
-    console.log('🔍 Fetching clients from database...');
-    
     const { data, error } = await supabase
       .from('clients')
       .select('*')
       .order('created_at', { ascending: false });
 
-    console.log('📊 Database response:', { data, error });
-
     if (error) {
-      console.error('❌ Database error:', error);
+      logger.error('clients fetch error', new Error(error.message));
       return NextResponse.json(
-        { error: 'Failed to fetch clients', details: error.message },
+        { error: 'Failed to fetch clients' },
         { status: 500 }
       );
     }
 
-    console.log(`✅ Successfully fetched ${data?.length || 0} clients`);
     return NextResponse.json(data || []);
-  } catch (error: any) {
-    console.error('❌ Error fetching clients:', error);
+  } catch (error: unknown) {
+    logger.error('clients list error', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

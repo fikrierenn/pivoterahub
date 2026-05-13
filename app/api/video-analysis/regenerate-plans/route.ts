@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { analyzeVideo } from '@/lib/llm/video-analysis';
+import { supabase } from '@/lib/supabase';
 import { enforceRateLimit } from '@/lib/rateLimitGuard';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Supabase ortam degiskenleri eksik.');
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { persistSession: false },
-});
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   const limited = await enforceRateLimit(req, 'ANALYZE');
@@ -98,7 +88,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ analysis: merged });
   } catch (err) {
-    console.error('Plan regen hatasi:', err);
+    logger.error('plan regen error', err instanceof Error ? err : new Error(String(err)));
     return NextResponse.json({ error: 'Alternatifler uretilemedi.' }, { status: 500 });
   }
 }

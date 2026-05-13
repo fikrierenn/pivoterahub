@@ -90,17 +90,7 @@ export async function analyzeCinematic(videoPath: string): Promise<CinematicAnal
     const parsed = JSON.parse(rawContent);
     const validated = CinematicAnalysisSchema.safeParse(parsed);
     if (!validated.success) {
-      logger.warn('cinematic analysis validation failed', { errors: validated.error.issues });
-      // Fallback: schema default'larıyla parse
-      return CinematicAnalysisSchema.parse({
-        composition: parsed.composition ?? 'Analiz edilemedi',
-        lighting: parsed.lighting ?? 'Analiz edilemedi',
-        color_palette: parsed.color_palette ?? 'Analiz edilemedi',
-        camera_movement: parsed.camera_movement ?? 'Analiz edilemedi',
-        visual_strengths: Array.isArray(parsed.visual_strengths) ? parsed.visual_strengths : [],
-        visual_weaknesses: Array.isArray(parsed.visual_weaknesses) ? parsed.visual_weaknesses : [],
-        overall_score: typeof parsed.overall_score === 'number' ? parsed.overall_score : 5,
-      });
+      throw new Error(`Sinematik analiz şema hatası: ${validated.error.issues.map((i) => i.message).join(', ')}`);
     }
 
     return validated.data;

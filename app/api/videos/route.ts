@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { enforceRateLimit } from '@/lib/rateLimitGuard';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const limited = await enforceRateLimit(request, 'DEFAULT');
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     .order('published_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching videos:', error);
+    logger.error('videos fetch error', new Error(error.message));
     return NextResponse.json(
       { error: 'Video listesi alinamadi' },
       { status: 500 }
@@ -51,6 +52,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'DEFAULT');
+  if (limited) return limited;
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
@@ -67,7 +71,7 @@ export async function DELETE(request: NextRequest) {
     .eq('video_id', id);
 
   if (scoresError) {
-    console.error('Error deleting video scores:', scoresError);
+    logger.error('video scores delete error', new Error(scoresError.message));
     return NextResponse.json(
       { error: 'Video skorlarini silme basarisiz' },
       { status: 500 }
@@ -80,7 +84,7 @@ export async function DELETE(request: NextRequest) {
     .eq('video_id', id);
 
   if (statsError) {
-    console.error('Error deleting video stats:', statsError);
+    logger.error('video stats delete error', new Error(statsError.message));
     return NextResponse.json(
       { error: 'Video istatistiklerini silme basarisiz' },
       { status: 500 }
@@ -93,7 +97,7 @@ export async function DELETE(request: NextRequest) {
     .eq('id', id);
 
   if (videoError) {
-    console.error('Error deleting video:', videoError);
+    logger.error('video delete error', new Error(videoError.message));
     return NextResponse.json(
       { error: 'Video silme basarisiz' },
       { status: 500 }
