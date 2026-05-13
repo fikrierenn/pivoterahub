@@ -44,8 +44,7 @@ export default function BioAnalysisResults({
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // You could add a toast notification here
+    navigator.clipboard.writeText(text).catch(() => {});
   };
 
   const sections = [

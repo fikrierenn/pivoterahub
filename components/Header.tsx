@@ -15,7 +15,7 @@ export default function Header() {
   const [showVideoAnalysisForm, setShowVideoAnalysisForm] = useState(false);
 
   return (
-    <header className="bg-white border-b border-slate-200 h-14 fixed top-0 right-0 left-56 z-10 shadow-sm">
+    <header className="bg-white border-b border-slate-200 h-14 fixed top-0 right-0 left-56 z-10 shadow-sm no-print">
       <div className="h-full px-4 flex items-center gap-4">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">

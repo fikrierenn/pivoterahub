@@ -31,7 +31,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-56 min-h-screen fixed left-0 top-0 flex flex-col"
+      className="w-56 min-h-screen fixed left-0 top-0 flex flex-col no-print"
       style={{ backgroundColor: '#0c1e3d', borderRight: '1px solid rgba(255,255,255,0.07)' }}
     >
       {/* Logo */}

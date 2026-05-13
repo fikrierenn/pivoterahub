@@ -205,7 +205,7 @@ export default function IntakeFormViewer({
                           
                           {value && (
                             <button
-                              onClick={() => navigator.clipboard.writeText(formatValue(field, value))}
+                              onClick={() => navigator.clipboard.writeText(formatValue(field, value)).catch(() => {})}
                               className="ml-2 text-gray-400 hover:text-gray-600 text-xs"
                               title="Kopyala"
                             >
