@@ -1,11 +1,10 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import '../report-pdf.css';
+import { useReactToPrint } from 'react-to-print';
 import { AnalysisReportContent } from '@/components/AnalysisReportContent';
-import { PrintPreviewModal } from '@/components/PrintPreviewModal';
 import { DirectorPanel } from '@/components/DirectorPanel';
 
 type VideoScore = {
@@ -89,13 +88,50 @@ const categoryStyles: Record<string, CategoryStyle> = {
   },
 };
 
+function TranscriptSection({ transcript }: { transcript: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const preview = transcript.slice(0, 300);
+  const isLong = transcript.length > 300;
+
+  return (
+    <div className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm no-print">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+        <h3 className="font-bold text-slate-800 text-sm">Video Transkripti</h3>
+        {isLong && (
+          <button
+            type="button"
+            onClick={() => setExpanded(prev => !prev)}
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+          >
+            {expanded ? 'Daralt' : 'Tamamini Goster'}
+          </button>
+        )}
+      </div>
+      <div className="px-5 py-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+        {expanded || !isLong ? transcript : `${preview}...`}
+      </div>
+    </div>
+  );
+}
+
 export default function VideoDetailPage() {
   const params = useParams<{ id: string }>();
   const id = Array.isArray(params?.id) ? params?.id[0] : params?.id;
+  const reportRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: reportRef,
+    documentTitle: 'Video Raporu - PivotaraHub',
+    pageStyle: `
+      @page { size: A4 portrait; margin: 12mm 15mm; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11px; }
+      .report-card, .timeline-item { break-inside: avoid; page-break-inside: avoid; margin-bottom: 12px; }
+      .space-y-6 > * + * { margin-top: 12px; }
+    `,
+  });
+
   const [video, setVideo] = useState<VideoDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPrint, setShowPrint] = useState(false);
   const [isProducing, setIsProducing] = useState(false);
   const [productionStatus, setProductionStatus] = useState<string | null>(null);
   const [audioUrls, setAudioUrls] = useState<string[]>([]);
@@ -267,7 +303,7 @@ export default function VideoDetailPage() {
         <div className="flex items-center gap-2 no-print">
           <button
             type="button"
-            onClick={() => setShowPrint(true)}
+            onClick={() => handlePrint()}
             className="bg-slate-900 text-white px-6 py-2 rounded-full font-bold hover:bg-slate-800 transition-colors"
           >
             Yazdir / PDF Kaydet
@@ -356,14 +392,20 @@ export default function VideoDetailPage() {
               )}
             </div>
           )}
-          <AnalysisReportContent
-            analysis={analysis}
-            score={score}
-            stats={stats}
-            categoryStyle={categoryStyle}
-            formatDate={formatDate}
-            videoMeta={videoMeta}
-          />
+          <div ref={reportRef}>
+            <AnalysisReportContent
+              analysis={analysis}
+              score={score}
+              stats={stats}
+              categoryStyle={categoryStyle}
+              formatDate={formatDate}
+              videoMeta={videoMeta}
+            />
+          </div>
+          {video.transcript && (
+            <TranscriptSection transcript={video.transcript} />
+          )}
+
           <div className="mt-6 no-print">
             <DirectorPanel
               videoId={video.id}
@@ -374,18 +416,6 @@ export default function VideoDetailPage() {
         </div>
       )}
 
-      {video && (
-        <PrintPreviewModal
-          analysis={analysis}
-          score={score}
-          stats={stats}
-          categoryStyle={categoryStyle}
-          formatDate={formatDate}
-          videoMeta={videoMeta}
-          isOpen={showPrint}
-          onClose={() => setShowPrint(false)}
-        />
-      )}
     </div>
   );
 }

@@ -120,7 +120,7 @@ export function AnalysisReportContent({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 report-card">
+      <div className="grid grid-cols-2 md:grid-cols-5 print:grid-cols-5 gap-4 report-card">
         <ScoreGauge score={scoreValue(analysis?.hook_score ?? score?.hook_score)} title="Kanca" icon="H" />
         <ScoreGauge score={scoreValue(analysis?.tempo_score ?? score?.tempo_score)} title="Tempo" icon="T" />
         <ScoreGauge score={scoreValue(analysis?.clarity_score ?? score?.clarity_score)} title="Netlik" icon="N" />
@@ -139,7 +139,7 @@ export function AnalysisReportContent({
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 report-card">
+      <div className="grid md:grid-cols-2 print:grid-cols-2 gap-6 report-card">
         <div className="space-y-6">
           <AnalysisCard title="Kanca Analizi" content={analysis?.hook_analysis || 'Yok'} tone="blue" />
           <AnalysisCard title="Tempo Analizi" content={analysis?.tempo_analysis || 'Yok'} tone="indigo" />
@@ -162,7 +162,7 @@ export function AnalysisReportContent({
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 report-card">
+      <div className="grid md:grid-cols-2 print:grid-cols-2 gap-6 report-card">
         <div className="bg-red-50 rounded-xl border border-red-100 overflow-hidden">
           <div className="bg-red-100 px-4 py-3 border-b border-red-200 text-red-800 font-bold">
             Kritik Hatalar
@@ -191,7 +191,7 @@ export function AnalysisReportContent({
       </div>
 
       {(analysis?.quick_actions?.length || analysis?.hook_variations?.length) && (
-        <div className="grid md:grid-cols-2 gap-6 report-card">
+        <div className="grid md:grid-cols-2 print:grid-cols-2 gap-6 report-card">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="bg-slate-900 text-white px-4 py-3 font-bold text-sm">
               Hemen Yap (3 Adim)

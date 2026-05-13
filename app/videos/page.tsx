@@ -357,7 +357,7 @@ export default function VideosPage() {
                     href={`/videos/${video.id}`}
                     className="px-2.5 py-1.5 rounded border border-zinc-200 text-zinc-700 text-xs hover:bg-zinc-100 transition-colors"
                   >
-                    Sayfa
+                    Tam Rapor &amp; PDF
                   </Link>
                   <button
                     type="button"

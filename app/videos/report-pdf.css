@@ -4,41 +4,50 @@
 }
 
 @media print {
-  body * {
-    visibility: hidden !important;
+  /* Hide UI chrome */
+  .no-print {
+    display: none !important;
   }
 
-  #printable-report,
-  #printable-report * {
-    visibility: visible !important;
+  /* Remove sidebar margin — content goes full width */
+  .ml-56 {
+    margin-left: 0 !important;
   }
 
+  /* Remove layout padding */
+  main {
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* If modal is open, hide it — use inline report instead */
+  .modal-container {
+    display: none !important;
+  }
+
+  /* Ensure report content prints */
   #printable-report {
-    position: static !important;
+    display: block !important;
     width: 100% !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 16px !important;
     box-shadow: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     background-color: #ffffff !important;
   }
 
-  html,
-  body {
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  .modal-container,
-  .modal-container-content {
-    position: static !important;
-    overflow: visible !important;
-    max-height: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
+  /* Keep cards together across page breaks */
   .report-card,
   .timeline-item,
   .score-gauge {
