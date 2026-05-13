@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import DashboardWidget from '@/components/charts/DashboardWidget';
 
 async function getDashboardStats() {
   try {
@@ -70,6 +71,7 @@ async function getDashboardStats() {
 
 export default async function Home() {
   const stats = await getDashboardStats();
+  
   return (
     <div className="p-8">
       {/* Page Header */}
@@ -126,6 +128,139 @@ export default async function Home() {
               <span className="text-2xl">#️⃣</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Client Status Breakdown */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Müşteri Durumu</h2>
+        <div className="grid grid-cols-5 gap-4">
+          <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="text-3xl mb-2">🔵</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.lead}</div>
+            <div className="text-sm text-gray-600">Lead</div>
+          </div>
+          <div className="text-center p-4 bg-yellow-50 rounded-lg">
+            <div className="text-3xl mb-2">🟡</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.prospect}</div>
+            <div className="text-sm text-gray-600">Prospect</div>
+          </div>
+          <div className="text-center p-4 bg-green-50 rounded-lg">
+            <div className="text-3xl mb-2">🟢</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.active}</div>
+            <div className="text-sm text-gray-600">Active</div>
+          </div>
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            <div className="text-3xl mb-2">⚪</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.inactive}</div>
+            <div className="text-sm text-gray-600">Inactive</div>
+          </div>
+          <div className="text-center p-4 bg-purple-50 rounded-lg">
+            <div className="text-3xl mb-2">✅</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.completed}</div>
+            <div className="text-sm text-gray-600">Completed</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Müşteri Durumu Dağılımı</h2>
+          <DashboardWidget
+            title=""
+            data={[
+              { name: 'Lead', value: stats.statusBreakdown.lead },
+              { name: 'Prospect', value: stats.statusBreakdown.prospect },
+              { name: 'Active', value: stats.statusBreakdown.active },
+              { name: 'Inactive', value: stats.statusBreakdown.inactive },
+              { name: 'Completed', value: stats.statusBreakdown.completed }
+            ]}
+            chartType="donut"
+            size="medium"
+            nameKey="name"
+            dataKey="value"
+          />
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Performans Trendi</h2>
+          <DashboardWidget
+            title=""
+            data={[
+              { name: 'Oca', value: 45 },
+              { name: 'Şub', value: 52 },
+              { name: 'Mar', value: 48 },
+              { name: 'Nis', value: 61 },
+              { name: 'May', value: 55 },
+              { name: 'Haz', value: 67 },
+              { name: 'Tem', value: 73 }
+            ]}
+            chartType="line"
+            size="medium"
+            nameKey="name"
+            dataKey="value"
+            color="#10B981"
+          />
+        </div>
+      </div>
+
+      {/* Quick Stats Widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Video Skorları</h3>
+          <DashboardWidget
+            title=""
+            data={[
+              { name: 'Hook', value: 7.2 },
+              { name: 'Tempo', value: 6.8 },
+              { name: 'Netlik', value: 8.1 },
+              { name: 'CTA', value: 6.5 },
+              { name: 'Görsel', value: 7.9 }
+            ]}
+            chartType="bar"
+            size="small"
+            nameKey="name"
+            dataKey="value"
+            color="#8B5CF6"
+          />
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Aylık Büyüme</h3>
+          <DashboardWidget
+            title=""
+            data={[
+              { name: '1', value: 120 },
+              { name: '2', value: 135 },
+              { name: '3', value: 148 },
+              { name: '4', value: 162 },
+              { name: '5', value: 178 },
+              { name: '6', value: 195 },
+              { name: '7', value: 210 }
+            ]}
+            chartType="sparkline"
+            size="small"
+            nameKey="name"
+            dataKey="value"
+            color="#06B6D4"
+          />
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Platform Dağılımı</h3>
+          <DashboardWidget
+            title=""
+            data={[
+              { name: 'Instagram', value: 65 },
+              { name: 'TikTok', value: 25 },
+              { name: 'YouTube', value: 10 }
+            ]}
+            chartType="pie"
+            size="small"
+            nameKey="name"
+            dataKey="value"
+          />
         </div>
       </div>
 
@@ -190,38 +325,6 @@ export default async function Home() {
             <code className="text-xs bg-gray-100 px-2 py-1 rounded">
               POST /api/growth-report
             </code>
-          </div>
-        </div>
-      </div>
-
-      {/* Client Status Breakdown */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Müşteri Durumu</h2>
-        <div className="grid grid-cols-5 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-3xl mb-2">🔵</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.lead}</div>
-            <div className="text-sm text-gray-600">Lead</div>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <div className="text-3xl mb-2">🟡</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.prospect}</div>
-            <div className="text-sm text-gray-600">Prospect</div>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-3xl mb-2">🟢</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.active}</div>
-            <div className="text-sm text-gray-600">Active</div>
-          </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-3xl mb-2">⚪</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.inactive}</div>
-            <div className="text-sm text-gray-600">Inactive</div>
-          </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="text-3xl mb-2">✅</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.statusBreakdown.completed}</div>
-            <div className="text-sm text-gray-600">Completed</div>
           </div>
         </div>
       </div>

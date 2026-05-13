@@ -16,12 +16,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className="bg-gray-50">
+      <body className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
         <Sidebar />
         <div className="ml-64 min-h-screen flex flex-col">
           <Header />
-          <main className="flex-1 pt-16">
-            {children}
+          <main className="flex-1 pt-16 px-4 pb-8">
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </main>
           <Footer />
         </div>
