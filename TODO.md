@@ -24,11 +24,23 @@
 - Python scraper error handling güçlendir
 
 - **Performans optimizasyonu — Tier 3:**
-  - ✅ `complete-analysis/route.ts` — paralelleştirme TAMAMLANDI (Plan 03, commit fc4ebd0)
-  - `VideoAnalysisForm.tsx` — parent'larda `dynamic()` import (~15-25KB initial JS azalır)
-  - `lib/llm/video-analysis.ts` — `generatePlanVariations` fallback'ini kaldır, ana prompt'ta `responseSchema` ile 3 plan enforce et (~%40 Gemini token tasarrufu)
-  - `videos/page.tsx` — search index pre-compute (100+ kayıtta filter typing lag düşer)
-  - `lib/llm/video-analysis.ts` — `gemini-3-flash-preview` preview model için stable fallback ekle
+  - ✅ `complete-analysis/route.ts` — paralelleştirme TAMAMLANDI (Plan 03)
+  - ✅ `VideoAnalysisForm.tsx` — Header + clients/[id] + videos dynamic import TAMAMLANDI
+  - ✅ `lib/llm/video-analysis.ts` — `gemini-3-flash-preview` stable fallback TAMAMLANDI
+  - `lib/llm/video-analysis.ts` — `generatePlanVariations` kaldır + ana prompt'ta `responseSchema` ile 3 plan enforce (~%40 Gemini token)
+  - `videos/page.tsx` — search index pre-compute (100+ kayıtta filter typing lag)
+
+- **Kod analiz Tier-2 backlog** (2026-05-13 agent taraması):
+  - 4 sayfada race condition (intake, bio-analysis, competitor-analysis, video-performance): useEffect içine inline async + cancelled flag, loadData state setter'larını sarmalama gerekli (PowerShell yarı-fix denendi, geri alındı)
+  - `useState<any>` yaygın — `types/database.ts` tiplerini kullan
+  - `loading.tsx` / `error.tsx` boundary'leri yok (her route segment için)
+  - `app/videos/[id]/page.tsx:200` `startProduction` dead code — iş kararı (üretim pasif, sonra aktif)
+  - `VideoAnalysisForm` clientId değişiminde form reset yok
+  - Python subprocess (`python-instagram-scraper`, `competitor-scraper`): timeout dışında kill yok, double-resolve race ince riski
+- **Güvenlik/Bundle:**
+  - ✅ XSS sanitizer (DOMPurify) TAMAMLANDI — `<SafeHtml>` component, 33 yer
+  - ✅ SessionProvider TAMAMLANDI — `app/layout.tsx`
+  - ✅ 3 unused paket uninstall (@anthropic-ai/sdk, groq-sdk, puppeteer)
 - Video sayfası Director + Agent sekmeleri (FAZ 4)
 - Zod şemalarını tüm Gemini çıktılarına ekle (şu an kısmi)
 - `npm run build` — TypeScript strict mode hataları temizle
