@@ -38,40 +38,40 @@ export default function CompetitorAnalysisPage() {
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    if (clientId) {
-      loadData();
-    }
+    if (!clientId) return;
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const clientResponse = await fetch(`/api/clients/${clientId}`);
+        if (!cancelled && clientResponse.ok) {
+          const clientData = await clientResponse.json();
+          if (!cancelled) {
+            setClient(clientData.client);
+            if (clientData.intakeForm?.answers?.competitors) {
+              setCompetitorUsernames(clientData.intakeForm.answers.competitors);
+            }
+          }
+        }
+
+        const analysisResponse = await fetch(`/api/clients/${clientId}/competitor-analysis`);
+        if (!cancelled && analysisResponse.ok) {
+          const analysisData = await analysisResponse.json();
+          if (!cancelled && analysisData.analysis) {
+            setAnalysis(analysisData.analysis);
+            setCompetitorsData(analysisData.competitors_data?.competitors || []);
+          }
+        }
+      } catch {
+        // silent
+      } finally {
+        if (!cancelled) setInitialLoading(false);
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
   }, [clientId]);
-
-  const loadData = async () => {
-    try {
-      // Load client data
-      const clientResponse = await fetch(`/api/clients/${clientId}`);
-      if (clientResponse.ok) {
-        const clientData = await clientResponse.json();
-        setClient(clientData.client);
-        
-        // Extract competitor usernames from intake form
-        if (clientData.intakeForm?.answers?.competitors) {
-          setCompetitorUsernames(clientData.intakeForm.answers.competitors);
-        }
-      }
-
-      // Load existing competitor analysis
-      const analysisResponse = await fetch(`/api/clients/${clientId}/competitor-analysis`);
-      if (analysisResponse.ok) {
-        const analysisData = await analysisResponse.json();
-        if (analysisData.analysis) {
-          setAnalysis(analysisData.analysis);
-          setCompetitorsData(analysisData.competitors_data?.competitors || []);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setInitialLoading(false);
-    }
-  };
 
   const extractUsernames = (text: string): string[] => {
     if (!text) return [];

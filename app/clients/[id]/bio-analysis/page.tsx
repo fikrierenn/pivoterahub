@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import BioAnalysisForm from '@/components/BioAnalysisForm';
 import BioAnalysisResults from '@/components/BioAnalysisResults';
@@ -14,36 +14,38 @@ export default function ClientBioAnalysisPage() {
   const [currentAnalysis, setCurrentAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (clientId) {
-      loadData();
-    }
-  }, [clientId]);
+  const cancelledRef = useRef(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    cancelledRef.current = false;
+    setLoading(true);
     try {
-      // Load client data
       const clientResponse = await fetch(`/api/clients/${clientId}`);
-      if (clientResponse.ok) {
+      if (!cancelledRef.current && clientResponse.ok) {
         const clientData = await clientResponse.json();
-        setClient(clientData.client);
+        if (!cancelledRef.current) setClient(clientData.client);
       }
 
-      // Load existing bio analysis
       const analysisResponse = await fetch(`/api/clients/${clientId}/bio-analysis`);
-      if (analysisResponse.ok) {
+      if (!cancelledRef.current && analysisResponse.ok) {
         const analysisData = await analysisResponse.json();
-        if (analysisData.analysis) {
+        if (!cancelledRef.current && analysisData.analysis) {
           setExistingAnalysis(analysisData.analysis);
           setCurrentAnalysis(analysisData.analysis);
         }
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch {
+      // silent
     } finally {
-      setLoading(false);
+      if (!cancelledRef.current) setLoading(false);
     }
-  };
+  }, [clientId]);
+
+  useEffect(() => {
+    if (!clientId) return;
+    loadData();
+    return () => { cancelledRef.current = true; };
+  }, [clientId, loadData]);
 
   const handleAnalysisComplete = (result: any) => {
     setCurrentAnalysis({

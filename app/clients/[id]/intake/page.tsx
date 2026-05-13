@@ -18,54 +18,44 @@ export default function ClientIntakePage() {
   const [currentCategory, setCurrentCategory] = useState(0);
 
   useEffect(() => {
-    if (clientId) {
-      loadData();
-    }
-  }, [clientId]);
+    if (!clientId) return;
+    let cancelled = false;
 
-  const loadData = async () => {
-    try {
-      // Load client data
-      const clientResponse = await fetch(`/api/clients/${clientId}`);
-      if (clientResponse.ok) {
-        const clientData = await clientResponse.json();
-        setClient(clientData.client);
-        
-        // If intake form exists, populate form data
-        if (clientData.intakeForm?.answers) {
-          setFormData(clientData.intakeForm.answers);
+    const load = async () => {
+      try {
+        const clientResponse = await fetch(`/api/clients/${clientId}`);
+        if (!cancelled && clientResponse.ok) {
+          const clientData = await clientResponse.json();
+          setClient(clientData.client);
+          if (clientData.intakeForm?.answers) setFormData(clientData.intakeForm.answers);
         }
-      }
 
-      // Load form template
-      const templateResponse = await fetch('/api/intake-questions');
-      if (templateResponse.ok) {
-        const templateData = await templateResponse.json();
-        if (templateData.template?.questions) {
-          setFormTemplate(templateData.template.questions);
-        } else {
-          // Fallback to minimal template
-          const minimalTemplate = await import('@/lib/minimal-intake-template.json');
+        const templateResponse = await fetch('/api/intake-questions');
+        const minimalTemplate = await import('@/lib/minimal-intake-template.json');
+        if (!cancelled) {
+          if (templateResponse.ok) {
+            const templateData = await templateResponse.json();
+            setFormTemplate(
+              templateData.template?.questions ??
+                (minimalTemplate.default as unknown as FormCategory[])
+            );
+          } else {
+            setFormTemplate(minimalTemplate.default as unknown as FormCategory[]);
+          }
+        }
+      } catch {
+        const minimalTemplate = await import('@/lib/minimal-intake-template.json').catch(() => null);
+        if (!cancelled && minimalTemplate) {
           setFormTemplate(minimalTemplate.default as unknown as FormCategory[]);
         }
-      } else {
-        // Fallback to minimal template
-        const minimalTemplate = await import('@/lib/minimal-intake-template.json');
-        setFormTemplate(minimalTemplate.default as unknown as FormCategory[]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      // Fallback to minimal template
-      try {
-        const minimalTemplate = await import('@/lib/minimal-intake-template.json');
-        setFormTemplate(minimalTemplate.default as unknown as FormCategory[]);
-      } catch (fallbackError) {
-        console.error('Error loading fallback template:', fallbackError);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};

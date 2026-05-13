@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import '../report-pdf.css';
 import { AnalysisReportContent } from '@/components/AnalysisReportContent';
 import { PrintPreviewModal } from '@/components/PrintPreviewModal';
+import { DirectorPanel } from '@/components/DirectorPanel';
 
 type VideoScore = {
   hook_score: number;
@@ -363,6 +364,13 @@ export default function VideoDetailPage() {
             formatDate={formatDate}
             videoMeta={videoMeta}
           />
+          <div className="mt-6 no-print">
+            <DirectorPanel
+              videoId={video.id}
+              transcript={video.transcript}
+              cinematicSummary={analysis?.cinematic ? JSON.stringify(analysis.cinematic) : null}
+            />
+          </div>
         </div>
       )}
 

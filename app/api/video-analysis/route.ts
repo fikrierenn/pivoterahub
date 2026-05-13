@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import path from 'path';
+import { promises as fs } from 'fs';
 import { VideoAnalysisFormSchema, VideoAnalysisRequestSchema } from '@/lib/validation/video-analysis';
 import { getClientById, getClientProfileSummary } from '@/lib/db/clients';
 import { insertVideo } from '@/lib/db/videos';
@@ -7,12 +9,17 @@ import { insertVideoStats, calculateEngagementRate } from '@/lib/db/video-stats'
 import { updateHashtagStats } from '@/lib/db/hashtag-stats';
 import { downloadVideo, transcribeVideo } from '@/lib/whisper/transcribe';
 import { analyzeVideo } from '@/lib/llm/video-analysis';
+import { analyzeCinematic } from '@/lib/directors/cinematicDirector';
+import { createTempDir } from '@/lib/ffmpeg';
 import { supabase } from '@/lib/supabase';
 import { enforceRateLimit } from '@/lib/rateLimitGuard';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   const limited = await enforceRateLimit(request, 'ANALYZE');
   if (limited) return limited;
+
+  let tempCleanup: (() => Promise<void>) | null = null;
 
   try {
     const contentType = request.headers.get('content-type') || '';
@@ -69,9 +76,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Transcribing video with Gemini...');
-    const transcript = await transcribeVideo(videoBuffer, filename);
-    console.log('Transcription completed');
+    // Sinematik analiz için videoBuffer'ı temp dosyaya yaz
+    const { dir, cleanup } = await createTempDir('video-analysis');
+    tempCleanup = cleanup;
+    const tempVideoPath = path.join(dir, filename);
+    await fs.writeFile(tempVideoPath, videoBuffer);
+
+    // Transkript + sinematik analiz paralel
+    logger.info('video analysis starting parallel tasks');
+    const [transcriptResult, cinematicResult] = await Promise.allSettled([
+      transcribeVideo(videoBuffer, filename),
+      analyzeCinematic(tempVideoPath),
+    ]);
+
+    if (transcriptResult.status === 'rejected') {
+      throw new Error(`Transkript alınamadı: ${transcriptResult.reason instanceof Error ? transcriptResult.reason.message : String(transcriptResult.reason)}`);
+    }
+    const transcript = transcriptResult.value;
+
+    const cinematic = cinematicResult.status === 'fulfilled' ? cinematicResult.value : null;
+    if (cinematicResult.status === 'rejected') {
+      logger.warn('cinematic analysis skipped (partial failure)', {
+        error: cinematicResult.reason instanceof Error ? cinematicResult.reason.message : String(cinematicResult.reason),
+      });
+    }
 
     const clientProfile = await getClientProfileSummary(validatedData.client_id);
     const previousScores = await getPreviousScores(validatedData.client_id, 5);
@@ -101,7 +129,7 @@ export async function POST(request: NextRequest) {
     const videoBase64 = videoBuffer.toString('base64');
     console.log('Video base64 length:', videoBase64.length);
 
-    console.log('Running AI analysis...');
+    logger.info('running gemini video analysis');
     const analysisResult = await analyzeVideo({
       client_profile: clientProfile!,
       video_meta: {
@@ -117,7 +145,8 @@ export async function POST(request: NextRequest) {
       sectorInstruction,
       positioning: clientProfile?.positioning,
     });
-    console.log('AI analysis completed');
+    // Sinematik sonucu ai_analysis'e ekle
+    const mergedAnalysis = cinematic ? { ...analysisResult, cinematic } : analysisResult;
 
     const video = await insertVideo({
       client_id: validatedData.client_id,
@@ -129,7 +158,7 @@ export async function POST(request: NextRequest) {
       captions: validatedData.captions || null,
       hashtags: validatedData.hashtags,
       transcript,
-      ai_analysis: analysisResult,
+      ai_analysis: mergedAnalysis,
       notes: 'Analysis completed with Gemini transcription',
     });
 
@@ -183,7 +212,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Video analysis completed successfully');
+    logger.info('video analysis completed successfully');
 
     return NextResponse.json({
       success: true,
@@ -197,7 +226,7 @@ export async function POST(request: NextRequest) {
         captions: video.captions,
         hashtags: video.hashtags,
         transcript: video.transcript,
-        ai_analysis: analysisResult,
+        ai_analysis: mergedAnalysis,
       },
       scores: {
         hook_score: scores!.hook_score,
@@ -212,6 +241,7 @@ export async function POST(request: NextRequest) {
       analysis_details: {
         improvement_suggestions: analysisResult.improvement_suggestions,
       },
+      cinematic: cinematic ?? null,
       stats: stats ? {
         views: stats.views,
         likes: stats.likes,
@@ -219,22 +249,25 @@ export async function POST(request: NextRequest) {
         shares: stats.shares,
         saves: stats.saves,
         engagement_rate: stats.engagement_rate,
-      } : null
+      } : null,
     });
 
-  } catch (error: any) {
-    console.error('Video analysis error:', error);
+  } catch (error: unknown) {
+    const err = error as { name?: string; message?: string; errors?: unknown };
+    logger.error('video analysis error', error instanceof Error ? error : new Error(String(error)));
 
-    if (error.name === 'ZodError') {
+    if (err.name === 'ZodError') {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: err.errors },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: err.message || 'Internal server error' },
       { status: 500 }
     );
+  } finally {
+    if (tempCleanup) await tempCleanup().catch(() => undefined);
   }
 }

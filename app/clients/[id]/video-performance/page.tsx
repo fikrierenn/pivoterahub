@@ -17,33 +17,34 @@ export default function VideoPerformancePage() {
   const [activeTab, setActiveTab] = useState('viral');
 
   useEffect(() => {
-    if (clientId) {
-      loadData();
-    }
+    if (!clientId) return;
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const clientResponse = await fetch(`/api/clients/${clientId}`);
+        if (!cancelled && clientResponse.ok) {
+          const clientData = await clientResponse.json();
+          if (!cancelled) setClient(clientData.client);
+        }
+
+        const performanceResponse = await fetch(`/api/clients/${clientId}/video-performance`);
+        if (!cancelled && performanceResponse.ok) {
+          const performanceData = await performanceResponse.json();
+          if (!cancelled) {
+            setAnalysis({ summary: performanceData.summary, recent_videos: performanceData.recent_videos });
+          }
+        }
+      } catch {
+        // silent
+      } finally {
+        if (!cancelled) setInitialLoading(false);
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
   }, [clientId]);
-
-  const loadData = async () => {
-    try {
-      // Load client data
-      const clientResponse = await fetch(`/api/clients/${clientId}`);
-      if (clientResponse.ok) {
-        const clientData = await clientResponse.json();
-        setClient(clientData.client);
-      }
-
-      // Load basic video performance data
-      const performanceResponse = await fetch(`/api/clients/${clientId}/video-performance`);
-      if (performanceResponse.ok) {
-        const performanceData = await performanceResponse.json();
-        // Set basic data without full analysis
-        setAnalysis({ summary: performanceData.summary, recent_videos: performanceData.recent_videos });
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setInitialLoading(false);
-    }
-  };
 
   const startAnalysis = async () => {
     setLoading(true);
