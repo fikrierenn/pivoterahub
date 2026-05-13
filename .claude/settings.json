@@ -28,6 +28,20 @@
           {
             "type": "command",
             "command": "bash D:/Dev/pivoterahub/.claude/hooks/post-commit-journal.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash D:/Dev/pivoterahub/.claude/hooks/post-tool-size-warn.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash D:/Dev/pivoterahub/.claude/hooks/pre-compact.sh"
           }
         ]
       }
