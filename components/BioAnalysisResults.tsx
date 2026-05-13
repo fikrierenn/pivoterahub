@@ -1,5 +1,6 @@
 'use client';
 
+import { SafeHtml } from '@/components/SafeHtml';
 import { useState } from 'react';
 
 interface BioAnalysisResultsProps {
@@ -163,10 +164,7 @@ export default function BioAnalysisResults({
             {expandedSections[section.id] && (
               <div className="px-6 pb-4">
                 <div className={`p-4 ${section.bgColor} rounded-lg`}>
-                  <div
-                    className={`${section.textColor} leading-relaxed prose prose-sm max-w-none`}
-                    dangerouslySetInnerHTML={{ __html: section.content ?? '' }}
-                  />
+                  <SafeHtml className={`${section.textColor} leading-relaxed prose prose-sm max-w-none`} html={section.content ?? ''} />
                   <div className="mt-3 flex justify-end">
                     <button
                       onClick={() => copyToClipboard((section.content ?? '').replace(/<[^>]*>/g, ''))}

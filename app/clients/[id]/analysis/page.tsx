@@ -1,5 +1,6 @@
 'use client';
 
+import { SafeHtml } from '@/components/SafeHtml';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -114,34 +115,22 @@ export default function ClientAnalysisPage() {
               
               <div className="border-l-4 border-green-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">🎯 Strateji</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.profileCard.strategy }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.profileCard.strategy} />
               </div>
               
               <div className="border-l-4 border-blue-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">👥 Hedef Kitle</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.profileCard.target_audience }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.profileCard.target_audience} />
               </div>
               
               <div className="border-l-4 border-purple-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">📝 İçerik Önerileri</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.profileCard.content_suggestions }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.profileCard.content_suggestions} />
               </div>
               
               <div className="border-l-4 border-orange-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">⚡ Hızlı Kazanımlar</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.profileCard.quick_wins }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.profileCard.quick_wins} />
               </div>
             </div>
           )}
@@ -152,34 +141,22 @@ export default function ClientAnalysisPage() {
               
               <div className="border-l-4 border-blue-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">📊 Mevcut Seviye</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.professionalAnalysis.current_level_assessment }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.professionalAnalysis.current_level_assessment} />
               </div>
               
               <div className="border-l-4 border-red-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">⚠️ Ana Darboğazlar</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.professionalAnalysis.main_bottlenecks }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.professionalAnalysis.main_bottlenecks} />
               </div>
               
               <div className="border-l-4 border-green-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">💪 Güçlü Yanlar</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.professionalAnalysis.strengths }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.professionalAnalysis.strengths} />
               </div>
               
               <div className="border-l-4 border-purple-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">🚀 Büyüme Potansiyeli</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.professionalAnalysis.realistic_growth_potential }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.professionalAnalysis.realistic_growth_potential} />
               </div>
             </div>
           )}
@@ -199,34 +176,22 @@ export default function ClientAnalysisPage() {
               
               <div className="border-l-4 border-orange-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">📋 30 Günlük Plan</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.developmentPlan.thirty_day_plan }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.developmentPlan.thirty_day_plan} />
               </div>
               
               <div className="border-l-4 border-blue-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">🚀 90 Günlük Plan</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.developmentPlan.ninety_day_plan }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.developmentPlan.ninety_day_plan} />
               </div>
               
               <div className="border-l-4 border-green-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">🎯 Hedefler</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.developmentPlan.goals }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.developmentPlan.goals} />
               </div>
               
               <div className="border-l-4 border-purple-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">📊 Metrikler</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.developmentPlan.metrics }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.developmentPlan.metrics} />
               </div>
             </div>
           )}
@@ -246,34 +211,22 @@ export default function ClientAnalysisPage() {
               
               <div className="border-l-4 border-red-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">📊 Özet</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.presentation.executive_summary }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.presentation.executive_summary} />
               </div>
               
               <div className="border-l-4 border-blue-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">🎯 Öneriler</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.presentation.recommendations }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.presentation.recommendations} />
               </div>
               
               <div className="border-l-4 border-green-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">📈 Beklenen Sonuçlar</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.presentation.expected_results }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.presentation.expected_results} />
               </div>
               
               <div className="border-l-4 border-purple-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">💰 Yatırım</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: data.presentation.investment_required }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={data.presentation.investment_required} />
               </div>
             </div>
           )}

@@ -1,5 +1,6 @@
 'use client';
 
+import { SafeHtml } from '@/components/SafeHtml';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -286,39 +287,19 @@ export default function ClientDetailPage() {
             <div className="space-y-6">
               <div className="border-l-4 border-blue-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">📊 Mevcut Seviye</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: clientData.professionalAnalysis.current_level_assessment || 'Veri yok' 
-                  }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={clientData.professionalAnalysis.current_level_assessment || 'Veri yok'} />
               </div>
               <div className="border-l-4 border-red-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">⚠️ Ana Darboğazlar</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: clientData.professionalAnalysis.main_bottlenecks || 'Veri yok' 
-                  }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={clientData.professionalAnalysis.main_bottlenecks || 'Veri yok'} />
               </div>
               <div className="border-l-4 border-green-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">💪 Güçlü Yanlar</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: clientData.professionalAnalysis.strengths || 'Veri yok' 
-                  }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={clientData.professionalAnalysis.strengths || 'Veri yok'} />
               </div>
               <div className="border-l-4 border-purple-500 pl-4">
                 <h3 className="font-semibold text-gray-800 mb-2">🚀 Büyüme Potansiyeli</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: clientData.professionalAnalysis.realistic_growth_potential || 'Veri yok' 
-                  }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={clientData.professionalAnalysis.realistic_growth_potential || 'Veri yok'} />
               </div>
             </div>
           </div>

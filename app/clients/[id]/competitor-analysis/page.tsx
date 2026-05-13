@@ -1,5 +1,6 @@
 'use client';
 
+import { SafeHtml } from '@/components/SafeHtml';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 
@@ -285,37 +286,25 @@ export default function CompetitorAnalysisPage() {
               {/* SWOT Analysis */}
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">📋 SWOT Analizi</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: analysis.swot_analysis }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.swot_analysis} />
               </div>
 
               {/* Competitive Positioning */}
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">🎯 Rekabetçi Konumlandırma</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: analysis.competitive_positioning }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.competitive_positioning} />
               </div>
 
               {/* Market Opportunities */}
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">🚀 Pazar Fırsatları</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: analysis.market_opportunities }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.market_opportunities} />
               </div>
 
               {/* Differentiation Strategy */}
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">💡 Farklılaşma Stratejisi</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: analysis.differentiation_strategy }}
-                />
+                <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.differentiation_strategy} />
               </div>
             </div>
           ) : (

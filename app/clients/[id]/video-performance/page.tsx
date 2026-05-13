@@ -1,5 +1,6 @@
 'use client';
 
+import { SafeHtml } from '@/components/SafeHtml';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import PerformanceLineChart from '@/components/charts/PerformanceLineChart';
@@ -234,34 +235,22 @@ export default function VideoPerformancePage() {
                 <div className="space-y-6">
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">🔥 Viral Faktörler</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.viral_analysis.viral_factors }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.viral_analysis.viral_factors} />
                   </div>
 
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">📋 İçerik Kalıpları</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.viral_analysis.content_patterns }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.viral_analysis.content_patterns} />
                   </div>
 
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">🎯 Hook Analizi</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.viral_analysis.hook_analysis }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.viral_analysis.hook_analysis} />
                   </div>
 
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">🚀 Tekrarlama Stratejisi</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.viral_analysis.replication_strategy }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.viral_analysis.replication_strategy} />
                   </div>
                 </div>
               )}
@@ -271,34 +260,22 @@ export default function VideoPerformancePage() {
                 <div className="space-y-6">
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">🏆 En İyi Performans</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.performance_insights.top_performing_content }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.performance_insights.top_performing_content} />
                   </div>
 
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">🎥 İçerik Türü Analizi</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.performance_insights.content_type_analysis }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.performance_insights.content_type_analysis} />
                   </div>
 
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">#️⃣ Hashtag Etkinliği</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.performance_insights.hashtag_effectiveness }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.performance_insights.hashtag_effectiveness} />
                   </div>
 
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">📈 Büyüme Önerileri</h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: analysis.performance_insights.growth_recommendations }}
-                    />
+                    <SafeHtml className="text-gray-700 leading-relaxed prose prose-sm max-w-none" html={analysis.performance_insights.growth_recommendations} />
                   </div>
                 </div>
               )}
