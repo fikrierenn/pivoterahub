@@ -24,7 +24,12 @@ FrameOS'ta çalışan AI pipeline + 6 fazlı ROADMAP özelliklerinin tamamı Piv
 | FrameAgent chat | Claude Sonnet $3/$15 | **Claude Haiku 4.5 $1/$5** | ~%67 |
 | Director script rewrite | GPT-4o-mini $0.15/$0.60 | **Groq Llama 3.3 70B FREE** → fallback GPT-4o-mini | ~%100 |
 | Director sinematik analiz | GPT-4o $2.5/$10 (Vision) | **GPT-4o-mini $0.15/$0.60** (Vision destekli) | ~%94 |
-| TTS | OpenAI TTS $15/M char | **Facebook MMS-TTS-TR FREE** → ElevenLabs $0.30/M | ~%100 |
+| TTS | OpenAI TTS $15/M char | **Coqui XTTS-v2 self-hosted FREE** → Facebook MMS-TTS FREE → ElevenLabs $0.30/M | ~%100 |
+| Keyframe seçimi | 0.5fps random | **Katna (Python, free)** — kalite bazlı | ~%100 |
+| Video kalite (ek) | — | **VMAF (FFmpeg built-in, free)** + IQA-PyTorch | ~%100 |
+| Yüz/pose analizi | — | **MediaPipe npm (Node.js native, free)** | — |
+| Kelime timestamp | — | **WhisperX (free)** — altyazı senkronu | — |
+| Speaker diarization | — | **Pyannote 3.1 (free)** — kim konuştu | — |
 | İçerik moderasyon | — | **OpenAI Moderation API FREE** | — |
 | Virality/hook skoru | LLM prompt | **pyviralcontent + STEPPS formül** (CPU, free) | — |
 | Video kalite skoru | GPT-4o Vision | **DOVER-Mobile (Python, free)** | ~%100 |
@@ -132,21 +137,24 @@ ANALYSIS_SERVICE_URL=http://localhost:8001        # DOVER, FER, faster-whisper
 6. Auto-analysis pipeline'a moderation ekle (her video için)
 7. Supabase migration: `social_scores`, `ad_copies` tabloları
 
-### FAZ 5 — Python Microservice (FrameOS Faza 2'den)
+### FAZ 5 — Python Microservice (FrameOS Faza 2'den + Eksik Araçlar)
 
 ```
 services/video-analysis/
   main.py          # FastAPI app (port 8001)
   routers/
-    quality.py     # DOVER-Mobile (aesthetic + technical score)
-    shots.py       # TransNetV2 (shot boundaries, cuts/min)
-    emotion.py     # FER library (per-frame emotion CSV)
-    transcribe.py  # faster-whisper + sgangireddy/whisper-medium-tr
+    quality.py     # DOVER-Mobile + IQA-PyTorch (MUSIQ/NIMA/BRISQUE) + VMAF (FFmpeg)
+    shots.py       # TransNetV2 (shot boundaries) + Katna (kalite keyframe)
+    emotion.py     # FER library (hızlı) + DeepFace (Docker, yaş/cinsiyet de çıkarır)
+    transcribe.py  # faster-whisper (TR model) + WhisperX (kelime timestamp) + Pyannote (kim konuştu)
     ocr.py         # PaddleOCR (ekran metni + timestamp)
-    audio.py       # FFmpeg LUFS analizi
+    audio.py       # FFmpeg LUFS + Demucs (ses/müzik ayrımı)
+    virality.py    # pyviralcontent + harbarex/tiktok-virality ViViT classifier
   requirements.txt
   Dockerfile
 ```
+
+**Not:** MediaPipe'ı Python'a koyma — `@mediapipe/tasks-vision` npm paketi ile Next.js'te native çalışır, subprocess yok.
 
 Next.js → Python iletişim:
 ```typescript
@@ -154,7 +162,16 @@ Next.js → Python iletişim:
 const ANALYSIS_API = process.env.ANALYSIS_SERVICE_URL ?? 'http://localhost:8001';
 ```
 
-Duygu timeline frontend görselleştirmesi (Recharts — zaten kurulu).
+Duygu timeline + shot boundary frontend görselleştirmesi (Recharts — zaten kurulu).
+
+**Eklenen araçlar (FrameOS araştırmasından düşmüşler):**
+- **WhisperX** — kelime bazlı timestamp → altyazı senkronizasyonu, hook zamanı tespiti
+- **Pyannote 3.1** — kim ne zaman konuştu → multi-speaker videolar için kritik
+- **IQA-PyTorch** — 20+ kalite metriği (MUSIQ, NIMA, BRISQUE) → DOVER'a ek sinyal
+- **Netflix/VMAF** — FFmpeg'e entegre, şu an kullanılabilir, sıfır kurulum
+- **Katna** — 0.5fps random frame yerine kalite bazlı seçim → GPT-4o Vision'a daha iyi frame
+- **DeepFace** — Docker REST API, 7 duygu + yaş/cinsiyet → FER'den zengin çıktı
+- **harbarex/tiktok-virality** — ViViT binary classifier → TikTok viral probability
 
 ### FAZ 6 — Minimax & Ses Genişletme (FrameOS Faza 4'ten)
 
@@ -162,8 +179,37 @@ Duygu timeline frontend görselleştirmesi (Recharts — zaten kurulu).
 2. `app/api/tts-minimax/route.ts`
 3. `app/api/voice-clone/route.ts`
 4. `app/api/music-gen/route.ts`
-5. TTS fallback zinciri: Facebook MMS-TTS (free) → Minimax → ElevenLabs → OpenAI TTS
-6. `lib/audioSeparation.ts` — Demucs microservice çağrısı
+5. TTS fallback zinciri: **Coqui XTTS-v2** (self-hosted, TR native, %100 ücretsiz) → Facebook MMS-TTS (free API) → Minimax → ElevenLabs → OpenAI TTS
+6. `lib/audioSeparation.ts` — Demucs (FAZ 5 microservice üzerinden)
+
+**Coqui XTTS-v2 neden:** 35k⭐, 6 saniye ses örneğiyle voice clone yapıyor, Türkçe native, kendi sunucunda çalışıyor → sıfır maliyet.
+
+### FAZ 7 — MediaPipe Node.js Native Entegrasyon
+
+Python subprocess olmadan çalışır, Next.js API route'larına doğrudan eklenir:
+
+```typescript
+// npm install @mediapipe/tasks-vision
+// lib/mediapipe.ts
+import { FaceLandmarker, PoseLandmarker } from '@mediapipe/tasks-vision';
+
+// Her video frame'i için:
+// → 478 yüz landmark → göz teması, gülümseme, kaş analizi
+// → Vücut pose → jest, el hareketleri, duruş
+// → Engagement scoring: yüze bakma süresi, ifade yoğunluğu
+```
+
+Kullanım: video frame'lerini FFmpeg ile extract et → MediaPipe ile analiz → JSON timeline.
+
+### FAZ 8 — İleri Özellikler (GPU Gerekli / Araştırma)
+
+| Araç | Kapasite | Karar Noktası |
+|------|---------|---------------|
+| **VideoLLaMA3-7B** | GPT-4o Vision'ı replace et | GPU VPS → maliyet analizi |
+| **Qwen3-VL** (Alibaba) | OpenAI-compatible, ucuz vision | vLLM ile CPU'da da çalışabilir |
+| **Meta SAM2** | Video boyunca nesne/ürün takibi | GPU gerekli, ürün tanıtım videoları için |
+| **color-matcher** | Referans film renk grade transferi | CPU'da çalışır, anında eklenebilir |
+| **EmotiEffLib** | Duygu + engagement ONNX | DeepFace alternatifi, daha hafif |
 
 ### FAZ 7 — Supabase Entegrasyonu (Tüm Yeni Tablolar)
 
