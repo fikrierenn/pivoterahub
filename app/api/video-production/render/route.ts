@@ -6,6 +6,7 @@ const DEFAULT_AUDIO_BUCKET = 'video-assets';
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
 type ScriptStep = {
+  section?: string;
   timing?: string;
   tts_scene?: {
     text?: string;

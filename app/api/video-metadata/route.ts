@@ -120,8 +120,9 @@ export async function POST(request: NextRequest) {
       console.log('✅ Python scraper successful - real data extracted');
     } catch (scrapeError) {
       console.error('❌ Python scraper failed:', scrapeError);
+      const msg = scrapeError instanceof Error ? scrapeError.message : String(scrapeError);
       return NextResponse.json(
-        { error: `Video analizi başarısız: ${scrapeError.message}` },
+        { error: `Video analizi başarısız: ${msg}` },
         { status: 400 }
       );
     }

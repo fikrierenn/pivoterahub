@@ -205,11 +205,13 @@ export default function VideoDetailPage() {
     setRenderError(null);
     setAudioUrls([]);
     setAudioTimeline([]);
+    if (!video) return;
+    const videoId = (video as { id: string }).id;
     try {
       const renderResponse = await fetch('/api/video-production/render', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: video.id }),
+        body: JSON.stringify({ videoId }),
       });
       const renderPayload = await renderResponse.json().catch(() => ({}));
 
@@ -222,7 +224,9 @@ export default function VideoDetailPage() {
       setAudioTimeline(Array.isArray(renderPayload.audioTimeline) ? renderPayload.audioTimeline : []);
       setProductionStatus('Render basladi, durum izleniyor...');
     } catch (err) {
-      setRenderError(err instanceof Error ? err.message : 'Uretim baslatilamadi.');
+      const e = err as { message?: string } | Error;
+      const message = (e instanceof Error ? e.message : e?.message) ?? 'Uretim baslatilamadi.';
+      setRenderError(message);
       setProductionStatus(null);
     } finally {
       setIsProducing(false);

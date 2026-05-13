@@ -52,7 +52,7 @@ export class InstagramScraper {
     options.addArguments(`--user-agent=${randomUA}`);
     
     // Bot detection bypass
-    options.excludeSwitches(['enable-automation']);
+    options.excludeSwitches('enable-automation');
     options.addArguments('--disable-blink-features=AutomationControlled');
     
     // Proxy support (opsiyonel - şimdilik kapalı)

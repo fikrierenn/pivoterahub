@@ -163,13 +163,13 @@ export default function BioAnalysisResults({
             {expandedSections[section.id] && (
               <div className="px-6 pb-4">
                 <div className={`p-4 ${section.bgColor} rounded-lg`}>
-                  <div 
+                  <div
                     className={`${section.textColor} leading-relaxed prose prose-sm max-w-none`}
-                    dangerouslySetInnerHTML={{ __html: section.content }}
+                    dangerouslySetInnerHTML={{ __html: section.content ?? '' }}
                   />
                   <div className="mt-3 flex justify-end">
                     <button
-                      onClick={() => copyToClipboard(section.content.replace(/<[^>]*>/g, ''))}
+                      onClick={() => copyToClipboard((section.content ?? '').replace(/<[^>]*>/g, ''))}
                       className="text-sm text-gray-600 hover:text-gray-800"
                     >
                       📋 Metni Kopyala
@@ -192,8 +192,8 @@ export default function BioAnalysisResults({
         </button>
         <button
           onClick={() => {
-            const analysisText = sections.map(s => 
-              `${s.title}\n${s.content.replace(/<[^>]*>/g, '')}\n\n`
+            const analysisText = sections.map(s =>
+              `${s.title}\n${(s.content ?? '').replace(/<[^>]*>/g, '')}\n\n`
             ).join('');
             copyToClipboard(`Instagram Bio Analizi\n\n${analysisText}`);
           }}

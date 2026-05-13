@@ -386,14 +386,17 @@ export default function VideosPage() {
             </div>
 
             <div className="p-6 space-y-4">
-              {selectedVideo.ai_analysis?.full_script_plan?.length > 0 && (
-                <FullScriptTimeline scriptPlan={selectedVideo.ai_analysis.full_script_plan as any[]} />
-              )}
+              {(() => {
+                const plan = (selectedVideo.ai_analysis as { full_script_plan?: unknown[] } | null | undefined)?.full_script_plan;
+                return Array.isArray(plan) && plan.length > 0 ? (
+                  <FullScriptTimeline scriptPlan={plan as any[]} />
+                ) : null;
+              })()}
 
               <div className="bg-slate-50 rounded-lg p-4">
                 <div className="text-sm font-semibold text-gray-900 mb-2">AI Ozeti</div>
                 <div className="text-sm text-gray-700">
-                  {(selectedVideo.ai_analysis as any)?.ai_comment || selectedVideo.video_scores?.[0]?.ai_comment || 'Yorum yok'}
+                  {(selectedVideo.ai_analysis as { ai_comment?: string } | null | undefined)?.ai_comment || selectedVideo.video_scores?.[0]?.ai_comment || 'Yorum yok'}
                 </div>
               </div>
             </div>

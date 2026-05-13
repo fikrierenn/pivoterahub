@@ -111,7 +111,9 @@ export async function GET(req: NextRequest) {
     if (done && video && videoId) {
       const tmpFile = path.join(os.tmpdir(), `veo-${videoId}.mp4`);
       try {
-        await ai.files.download({
+        // @google/genai SDK 'files' alanı runtime'da tanımlı ama tipler eksik —
+        // SDK güncellenince düz çağrıya geçilecek.
+        await (ai as unknown as { files: { download: (args: { file: unknown; downloadPath: string }) => Promise<void> } }).files.download({
           file: video,
           downloadPath: tmpFile,
         });

@@ -47,7 +47,10 @@ export default function ScoreProgressChart({
     const averages: Record<string, number> = {};
     scoreTypes.forEach(scoreType => {
       if (scoreType !== 'overall') {
-        const avg = window.reduce((sum, d) => sum + d[`${scoreType}_score` as keyof ScoreDataPoint] as number, 0) / window.length;
+        const avg = window.reduce((sum, d) => {
+          const val = d[`${scoreType}_score` as keyof ScoreDataPoint];
+          return sum + (typeof val === 'number' ? val : 0);
+        }, 0) / window.length;
         averages[`${scoreType}_avg`] = Math.round(avg * 10) / 10;
       }
     });

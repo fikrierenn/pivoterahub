@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "@types/recharts": "^1.8.29",
+    "@types/selenium-webdriver": "^4.35.5",
     "chromedriver": "^143.0.0"
   }
 }

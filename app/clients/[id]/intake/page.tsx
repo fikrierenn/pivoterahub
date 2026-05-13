@@ -46,19 +46,19 @@ export default function ClientIntakePage() {
         } else {
           // Fallback to minimal template
           const minimalTemplate = await import('@/lib/minimal-intake-template.json');
-          setFormTemplate(minimalTemplate.default);
+          setFormTemplate(minimalTemplate.default as unknown as FormCategory[]);
         }
       } else {
         // Fallback to minimal template
         const minimalTemplate = await import('@/lib/minimal-intake-template.json');
-        setFormTemplate(minimalTemplate.default);
+        setFormTemplate(minimalTemplate.default as unknown as FormCategory[]);
       }
     } catch (error) {
       console.error('Error loading data:', error);
       // Fallback to minimal template
       try {
         const minimalTemplate = await import('@/lib/minimal-intake-template.json');
-        setFormTemplate(minimalTemplate.default);
+        setFormTemplate(minimalTemplate.default as unknown as FormCategory[]);
       } catch (fallbackError) {
         console.error('Error loading fallback template:', fallbackError);
       }
