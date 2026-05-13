@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { scrapeVideoWithPython } from '@/lib/scraping/python-scraper';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 interface VideoMetadata {
   platform: 'instagram' | 'tiktok' | 'youtube';
@@ -101,6 +102,9 @@ function detectPlatform(url: string): 'instagram' | 'tiktok' | 'youtube' | null 
 }
 
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'DEFAULT');
+  if (limited) return limited;
+
   try {
     const { url, client_id } = await request.json();
 

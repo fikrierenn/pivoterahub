@@ -4,8 +4,12 @@ import { supabase } from '@/lib/supabase';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 export async function GET(req: NextRequest) {
+  const limited = await enforceRateLimit(req, 'DEFAULT');
+  if (limited) return limited;
+
   const apiKey = process.env.GEMINI_API_KEY;
   const renderId = req.nextUrl.searchParams.get('renderId');
   const videoId = req.nextUrl.searchParams.get('videoId');

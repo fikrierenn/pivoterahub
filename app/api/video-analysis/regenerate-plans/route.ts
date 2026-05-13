@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeVideo } from '@/lib/llm/video-analysis';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -14,6 +15,9 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, 'ANALYZE');
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const videoId = body?.videoId as string | undefined;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { supabase } from '@/lib/supabase';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 const DEFAULT_AUDIO_BUCKET = 'video-assets';
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
@@ -255,6 +256,9 @@ const startVeoGeneration = async (
 };
 
 export async function POST(req: NextRequest) {
+  const limited = await enforceRateLimit(req, 'ANALYZE');
+  if (limited) return limited;
+
   const { videoId } = await req.json();
   const apiKey = process.env.GEMINI_API_KEY;
   const audioBucket = process.env.SUPABASE_AUDIO_BUCKET || DEFAULT_AUDIO_BUCKET;

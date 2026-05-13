@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const limited = await enforceRateLimit(request, 'DEFAULT');
+    if (limited) return limited;
+
     try {
         const { id } = await params;
         const clientId = id;

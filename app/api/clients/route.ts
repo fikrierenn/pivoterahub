@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { z } from 'zod';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
 const ClientSchema = z.object({
   name: z.string().min(1),
@@ -13,6 +14,9 @@ const ClientSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'DEFAULT');
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const validatedData = ClientSchema.parse(body);

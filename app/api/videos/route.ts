@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'DEFAULT');
+  if (limited) return limited;
   const { data, error } = await supabase
     .from('videos')
     .select(`

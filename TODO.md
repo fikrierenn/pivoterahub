@@ -9,7 +9,7 @@
 2d. ✅ **[T-03] · competitor-analysis tip uyumu** — TAMAMLANDI: `CompetitorData.error?` ve `CompetitorProfile.recent_posts.recent_posts_count?` + `engagement_rate?` opsiyonel yapıldı
 2e. ✅ **[T-04] · video-analysis funnel_stage tip** — TAMAMLANDI: Zod enum 4 değere düşürüldü ('cold' | 'warm' | 'hot' | 'sale')
 3. ✅ **[F-01] · Director AI scaffold** — Plan 04A TAMAMLANDI (commit 7c6cd60) — ffmpeg, videoPreprocessor, cinematicDirector, directorAI orkestratör (Groq → OpenAI fallback), `/api/director` endpoint
-3b. **[F-01 KALAN]** — Plan 04B/C/D bekliyor: TTS endpoint, yt-dlp download endpoint, video-analysis route'una sinematik entegrasyon, Director UI paneli
+3b. ✅ **[F-01 KALAN]** — Plan 04B/C/D TAMAMLANDI: TTS + download-video endpoint, sinematik analiz parallel entegrasyon, DirectorPanel UI (commit 93508ca + 3d0033b)
 4. **[F-02] · FrameAgent** — FAZ 3 — Claude chat asistanı, skill sistemi, auto-analysis
 5. **[M-01] · Supabase Migration** — FAZ 4 — cinematic_analysis sütunu, agent_analyses tablosu
 6. **[T-01] · Sidebar hardcoded istatistikler** — Gerçek Supabase sorgusu
@@ -32,7 +32,7 @@
   - `videos/page.tsx` — search index pre-compute (100+ kayıtta filter typing lag)
 
 - **Kod analiz Tier-2 backlog** (2026-05-13 agent taraması):
-  - 4 sayfada race condition (intake, bio-analysis, competitor-analysis, video-performance): useEffect içine inline async + cancelled flag, loadData state setter'larını sarmalama gerekli (PowerShell yarı-fix denendi, geri alındı)
+  - ✅ 4 sayfada race condition fix TAMAMLANDI (intake, bio-analysis, competitor-analysis, video-performance) — commit 3d0033b
   - `useState<any>` yaygın — `types/database.ts` tiplerini kullan
   - `loading.tsx` / `error.tsx` boundary'leri yok (her route segment için)
   - `app/videos/[id]/page.tsx:200` `startProduction` dead code — iş kararı (üretim pasif, sonra aktif)
