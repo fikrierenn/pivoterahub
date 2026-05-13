@@ -17,37 +17,35 @@ export default function ClientDetailPage() {
   const [showVideoAnalysisForm, setShowVideoAnalysisForm] = useState(false);
 
   useEffect(() => {
-    if (clientId) {
-      loadClientData();
-    }
-  }, [clientId]);
-
-  // Sayfa focus olduğunda veriyi yenile (form'dan dönüldüğünde)
-  useEffect(() => {
-    const handleFocus = () => {
-      if (clientId) {
-        loadClientData();
+    if (!clientId) return;
+    // Race condition koruması — clientId hızla değişirse eski fetch yeni state'i ezmesin.
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch(`/api/clients/${clientId}`);
+        if (cancelled) return;
+        if (response.ok) {
+          const data = await response.json();
+          if (!cancelled) setClientData(data);
+        }
+      } catch (error) {
+        if (!cancelled) console.error('Error loading client data:', error);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    })();
+    return () => { cancelled = true; };
   }, [clientId]);
 
+  // Manual refresh — analiz/form sonrası çağrılır.
   const loadClientData = async () => {
     try {
       const response = await fetch(`/api/clients/${clientId}`);
       if (response.ok) {
-        const data = await response.json();
-        console.log('API Response:', data); // Debug için
-        setClientData(data);
-      } else {
-        console.error('Failed to load client data');
+        setClientData(await response.json());
       }
     } catch (error) {
       console.error('Error loading client data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

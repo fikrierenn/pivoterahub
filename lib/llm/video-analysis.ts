@@ -478,7 +478,8 @@ JSON format:
       const tempDir = os.tmpdir();
       tempFilePath = path.join(tempDir, `gemini-vid-${Date.now()}.mp4`);
       const buffer = Buffer.from(input.video_base64, 'base64');
-      fs.writeFileSync(tempFilePath, buffer);
+      // Async — büyük base64 video buffer'ı (10-100MB) sync yazılırsa event loop tıkanır.
+      await fs.promises.writeFile(tempFilePath, buffer);
 
       uploadResult = await fileManager.uploadFile(tempFilePath, {
         mimeType: 'video/mp4',

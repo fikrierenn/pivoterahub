@@ -22,6 +22,13 @@
   - 🟡 `app/clients/[id]/analysis/page.tsx` (304 satır, Plan 02 ile 469→304) — opsiyonel split
   - 🟡 `app/videos/page.tsx` (411 satır) — filter/list/grid component'leri ayır
 - Python scraper error handling güçlendir
+
+- **Performans optimizasyonu — Tier 3 (plan gerektirir):**
+  - `complete-analysis/route.ts` — Instagram + LLM zincirini paralelleştir (~20-50s latency düşüşü, kullanıcı 5+ dakika bekliyor)
+  - `VideoAnalysisForm.tsx` — parent'larda `dynamic()` import (~15-25KB initial JS azalır)
+  - `lib/llm/video-analysis.ts` — `generatePlanVariations` fallback'ini kaldır, ana prompt'ta `responseSchema` ile 3 plan enforce et (~%40 Gemini token tasarrufu)
+  - `videos/page.tsx` — search index pre-compute (100+ kayıtta filter typing lag düşer)
+  - `lib/llm/video-analysis.ts` — `gemini-3-flash-preview` preview model için stable fallback ekle
 - Video sayfası Director + Agent sekmeleri (FAZ 4)
 - Zod şemalarını tüm Gemini çıktılarına ekle (şu an kısmi)
 - `npm run build` — TypeScript strict mode hataları temizle

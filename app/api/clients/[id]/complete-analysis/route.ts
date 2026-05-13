@@ -4,6 +4,7 @@ import { generateProfessionalAnalysis, generateAIProfileCard } from '@/lib/llm/p
 import { generateDevelopmentPlan } from '@/lib/llm/development-plan';
 import { generateClientPresentation } from '@/lib/llm/client-presentation';
 import { analyzeCompetitors } from '@/lib/llm/competitor-analysis';
+import { CompetitorScraper } from '@/lib/scraping/competitor-scraper';
 
 export async function POST(
   request: NextRequest,
@@ -265,9 +266,6 @@ export async function POST(
       const competitorUrls = answers.competitors || '';
       
       if (competitorUrls && instagramAnalysis) {
-        const { CompetitorScraper } = await import('@/lib/scraping/competitor-scraper');
-        const { analyzeCompetitors } = await import('@/lib/llm/competitor-analysis');
-        
         const competitorScraper = new CompetitorScraper();
         const competitorUsernames = competitorScraper.extractCompetitorUsernames(competitorUrls);
         
