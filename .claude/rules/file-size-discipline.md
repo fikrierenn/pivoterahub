@@ -58,13 +58,13 @@ find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.cs" -o -name "*.py" 
 **🔴 Kırmızı çizgi (500+):**
 - `components/VideoAnalysisForm.tsx` — 664 satır → alt component + hook ayır
 - `lib/llm/video-analysis.ts` — 613 satır → prompt sabitleri ayrı dosyaya
-- `app/clients/[id]/page.tsx` — 556 satır → sekme bazında component split
 
 **🟡 Hedef üstü (300-500):**
-- `app/clients/[id]/analysis/page.tsx` — 469 satır
+- `app/clients/[id]/page.tsx` — 372 satır (Plan 02 ile 556→372)
+- `app/clients/[id]/analysis/page.tsx` — 304 satır (Plan 02 ile 469→304)
 - `app/videos/page.tsx` — 411 satır
 
-Snapshot tarihi: 2026-05-13
+Snapshot tarihi: 2026-05-13 (Plan 02 sonrası güncellendi)
 
 ## Anti-Pattern
 

@@ -15,12 +15,12 @@
 
 ## BACKLOG
 
-- **Büyük dosya bölme** (file-size-discipline.md, 400+ satır → bölünmeli):
-  - `components/VideoAnalysisForm.tsx` (664 satır) — alt component + hook ayır
-  - `lib/llm/video-analysis.ts` (613 satır) — prompt'ları ayrı dosyaya çıkar
-  - `app/clients/[id]/page.tsx` (556 satır) — client detail view, sekme bazında ayır
-  - `app/clients/[id]/analysis/page.tsx` (469 satır) — analiz bölümlerini component'lere böl
-  - `app/videos/page.tsx` (411 satır) — filter/list/grid component'leri ayır
+- **Büyük dosya bölme** (file-size-discipline.md):
+  - 🔴 `components/VideoAnalysisForm.tsx` (664 satır) — alt component + hook ayır
+  - 🔴 `lib/llm/video-analysis.ts` (613 satır) — prompt'ları ayrı dosyaya çıkar
+  - 🟡 `app/clients/[id]/page.tsx` (372 satır, Plan 02 ile 556→372) — opsiyonel split
+  - 🟡 `app/clients/[id]/analysis/page.tsx` (304 satır, Plan 02 ile 469→304) — opsiyonel split
+  - 🟡 `app/videos/page.tsx` (411 satır) — filter/list/grid component'leri ayır
 - Python scraper error handling güçlendir
 - Video sayfası Director + Agent sekmeleri (FAZ 4)
 - Zod şemalarını tüm Gemini çıktılarına ekle (şu an kısmi)
