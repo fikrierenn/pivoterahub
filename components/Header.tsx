@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import VideoAnalysisForm from './VideoAnalysisForm';
+import dynamic from 'next/dynamic';
+
+// Dynamic import — VideoAnalysisForm 664 satır + recharts taşıyor, Header global olduğu için
+// First Load JS'i şişiriyordu. Modal davranışı — kullanıcı butona basana kadar yüklenmesin.
+const VideoAnalysisForm = dynamic(() => import('./VideoAnalysisForm'), {
+  ssr: false,
+  loading: () => null,
+});
 
 export default function Header() {
   const [showVideoAnalysisForm, setShowVideoAnalysisForm] = useState(false);

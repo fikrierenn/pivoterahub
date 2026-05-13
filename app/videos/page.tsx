@@ -2,8 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import VideoAnalysisForm from '@/components/VideoAnalysisForm';
+import dynamic from 'next/dynamic';
 import { FullScriptTimeline } from '@/components/FullScriptTimeline';
+
+// Dynamic — VideoAnalysisForm 664 satır, sadece modal açılınca lazım.
+const VideoAnalysisForm = dynamic(() => import('@/components/VideoAnalysisForm'), {
+  ssr: false,
+  loading: () => null,
+});
 
 type VideoScore = {
   hook_score: number;

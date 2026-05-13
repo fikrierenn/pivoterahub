@@ -2,10 +2,16 @@
 
 import { SafeHtml } from '@/components/SafeHtml';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import IntakeFormViewer from '@/components/IntakeFormViewer';
-import VideoAnalysisForm from '@/components/VideoAnalysisForm';
+
+// Dynamic — VideoAnalysisForm 664 satır, sadece modal açılınca lazım.
+const VideoAnalysisForm = dynamic(() => import('@/components/VideoAnalysisForm'), {
+  ssr: false,
+  loading: () => null,
+});
 
 export default function ClientDetailPage() {
   const params = useParams();
