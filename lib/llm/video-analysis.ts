@@ -8,7 +8,18 @@ import os from 'os';
 const API_KEY = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(API_KEY);
 const fileManager = new GoogleAIFileManager(API_KEY);
-const MODEL_NAME = 'gemini-3-flash-preview';
+
+// Preview model birincil, stable fallback. Preview 404/quota olursa otomatik düşüş.
+// Env override: GEMINI_VIDEO_MODEL ile birincili değiştir.
+const PRIMARY_MODEL = process.env.GEMINI_VIDEO_MODEL || 'gemini-3-flash-preview';
+const FALLBACK_MODEL = 'gemini-2.5-flash';
+
+function isModelUnavailableError(err: unknown): boolean {
+  if (!err) return false;
+  const msg = err instanceof Error ? err.message : String(err);
+  // Gemini SDK 404 / NOT_FOUND / model not found / quota exceeded
+  return /404|not found|not_found|unavailable|quota|deprecated/i.test(msg);
+}
 
 export const VideoAnalysisSchema = z.object({
   hook_score: z.number().default(0),
@@ -357,10 +368,22 @@ export async function analyzeVideo(
   try {
     console.log('Gemini (v2) analizi baslatiliyor...');
 
-    const model = genAI.getGenerativeModel({
-      model: MODEL_NAME,
+    // Birincil model ile dene; preview 404/quota olursa stable fallback'e düş.
+    let activeModelName = PRIMARY_MODEL;
+    let model = genAI.getGenerativeModel({
+      model: activeModelName,
       generationConfig: { responseMimeType: 'application/json' },
     });
+    const switchToFallback = (cause: unknown) => {
+      if (activeModelName === FALLBACK_MODEL) return false;
+      console.warn(`[video-analysis] ${activeModelName} kullanılamadı, ${FALLBACK_MODEL}'e düşülüyor:`, cause);
+      activeModelName = FALLBACK_MODEL;
+      model = genAI.getGenerativeModel({
+        model: activeModelName,
+        generationConfig: { responseMimeType: 'application/json' },
+      });
+      return true;
+    };
 
     const normalizeFullScriptPlan = (plan: any[]) => (
       plan.map((step: any) => {
@@ -499,7 +522,17 @@ JSON format:
     parts.push({ text: systemPrompt });
     parts.push({ text: userPrompt });
 
-    const result = await model.generateContent(parts);
+    // Preview model 404/quota -> fallback'e tek seferlik düş.
+    let result;
+    try {
+      result = await model.generateContent(parts);
+    } catch (err) {
+      if (isModelUnavailableError(err) && switchToFallback(err)) {
+        result = await model.generateContent(parts);
+      } else {
+        throw err;
+      }
+    }
     const responseText = result.response.text();
     const jsonResult = JSON.parse(responseText);
     console.log('Gemini raw video analysis:', JSON.stringify(jsonResult, null, 2));
