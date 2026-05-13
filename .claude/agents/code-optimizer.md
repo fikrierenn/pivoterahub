@@ -187,3 +187,51 @@ const items = await db
 - Her öneride "önce profile, sonra optimize" prensibini koru
 - Micro-optimizasyonlar (nanosaniye farkı) işaret etme — anlamlı etkisi olanları raporla
 - "İlerde lazım olur" diye gereksiz memo/useCallback önerme — sadece ölçülebilir kazanım olan yerlerde
+
+---
+
+## PivotaraHub'a Özel Bağlam
+
+### Çoklu AI Provider — Maliyet > Hız
+
+Bu projede 4 farklı AI provider var (Gemini, OpenAI, Claude, Groq) ve **maliyet öncelikli**. Optimizasyon önerirken model seçim hiyerarşisini hatırla:
+
+| Tier | Provider | Kullan |
+|------|----------|--------|
+| 0 (Free) | Gemini 2.5 Flash, Groq Llama 3.3 70B, Cerebras | Transkript, basit analiz |
+| 1 (Ucuz) | Gemini Flash-Lite, Claude Haiku, GPT-4o-mini | JSON skor, chat |
+| 2 (Pahalı) | GPT-4o, Claude Sonnet | Sadece Vision veya karmaşık reasoning |
+
+**Paralel LLM çağrısı önerirken:** Tier 0 paralel sınırsız (free tier RPM dikkat), Tier 1 maliyeti N* artırır, Tier 2 mutlaka chunked yap.
+
+### costTracking.ts Zorunluluğu
+
+Her AI çağrısından sonra maliyet **mutlaka loglanır**:
+
+```typescript
+import { calculateCost, formatCost } from '@/lib/utils/costTracking';
+
+const cost = calculateCost(model, inputTokens, outputTokens);
+logger.info('AI call', { model, cost: formatCost(cost.estimatedCost) });
+```
+
+Yeni AI çağrısı eklerken cost log yoksa → **bulgu olarak işaret et**.
+
+### Bilinen Hot Path'ler
+
+- `lib/llm/video-analysis.ts` (613 satır kırmızı çizgi) — Gemini Flash video upload + analiz. `generatePlanVariations` fallback'i 2 ekstra LLM çağrısı yapıyor (Tier-3 plan beklemede).
+- `app/api/clients/[id]/complete-analysis/route.ts` — 6 adım orkestratör, 4+ LLM + 2 scraper sıralı. Instagram + Competitor pipeline paralelleştirilebilir.
+- `components/VideoAnalysisForm.tsx` (664 satır kırmızı çizgi) — parent'larda dynamic import fırsatı.
+- `app/videos/page.tsx` — büyük liste filter (search index pre-compute fırsatı).
+
+### Stack Notları
+
+- Next.js **16** + App Router (RSC default, `'use client'` opt-in)
+- Supabase client: `@/lib/supabase` (RLS-aware); `supabaseAdmin` yok — her sorgu user-scoped
+- Python subprocess: `scripts/*.py` — process kill timeout 300s, spawn maliyeti yüksek (process pool fırsatı)
+- Auth: `lib/auth.ts` `getAuthUser()` + middleware (her /api/* token gerektirir)
+- Rate limit: `lib/rateLimitGuard.ts` ile endpoint başında `enforceRateLimit(request, 'ANALYZE')`
+
+### Atla — FrameOS Bölümü
+
+Genel agent şablonundaki 5. başlık (Frame Extraction, GPT-4o paralel) **FrameOS** içindi. Bu projede video analizi Gemini Flash video upload üzerinden — frame extraction yok. O öneri kaynağını kullanma.

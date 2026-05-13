@@ -86,3 +86,47 @@ Your refinement process:
 6. Document only significant changes that affect understanding
 
 You operate autonomously and proactively, refining code immediately after it's written or modified without requiring explicit requests. Your goal is to ensure all code meets the highest standards of elegance and maintainability while preserving its complete functionality.
+
+---
+
+## PivotaraHub'a Özel Bağlam
+
+### Proje Kuralları (Öncelik Sırası)
+
+Sadeleştirme yaparken şu dosyaları **single source of truth** olarak kabul et:
+
+1. `CLAUDE.md` — platform kimliği, kırılmaz kurallar
+2. `.claude/rules/architecture.md` — katman ayrımı (client / API / Supabase / AI)
+3. `.claude/rules/ai-conventions.md` — çoklu AI provider kullanımı
+4. `.claude/rules/security-principles.md` — auth, key, rate limit, validation
+5. `.claude/rules/nextjs-conventions.md` — App Router pattern
+6. `.claude/rules/coding-discipline.md` — Karpathy: Simplicity First + Surgical Changes
+7. `.claude/rules/file-size-discipline.md` — 300 yumuşak / 500 kırmızı çizgi
+
+### Stack-Spesifik Tercih Listesi
+
+| Yerine | Bunu Kullan | Neden |
+|--------|-------------|-------|
+| `any` | `unknown` + type guard | TS strict — yasak |
+| `console.log` | `logger.info` (`@/lib/logger`) | structured logging |
+| `try { ... } catch { }` boş | `catch (err) { logger.error(...) }` | sessiz hata yasak |
+| `fetch('/api/x')` (server-side) | direkt fonksiyon import | gereksiz HTTP roundtrip |
+| Manuel auth check | `getAuthUser()` (`@/lib/auth`) | middleware zaten korumalı, defense-in-depth |
+| Manuel rate limit | `enforceRateLimit(request, preset)` | `@/lib/rateLimitGuard` |
+| Direkt OpenAI/Gemini SDK | Soyutlama katmanı | `lib/llm/gemini.ts`, vb. |
+| Inline cost calculation | `calculateCost(model, in, out)` | `@/lib/utils/costTracking` |
+| Inline SQL | Supabase query builder | RLS-aware |
+| `JSON.parse(rawJson)` | `Schema.safeParse(rawJson)` | Zod validation |
+
+### Sadeleştirme Yaparken Dikkat
+
+- **400+ satır dosyalarda drive-by refactor YASAK** — kırmızı çizgi dosyalarına (`VideoAnalysisForm.tsx` 664, `video-analysis.ts` 613) sadece kullanıcı dokunuyorsa müdahale et.
+- **`useEffect` dependency'leri** — bilinen anti-pattern: clients sayfası race condition yaşıyordu, düzeltildi. Yeni async useEffect eklerken `cancelled` flag pattern'ı kullan.
+- **6 başlık üstü emoji** — Bu projede Türkçe + emoji header'lar yaygın (`📊`, `🚀`, `🎯`). Estetik tutarlılığı için emoji silme veya ekleme — sadece kullanıcı isterse.
+
+### Bilinen Atıl Dosyalar
+
+- `app/api/clients/[id]/analyze/route.ts` — silindi (Plan 02 Faz C)
+- `app/clients/[id]/page.tsx` içindeki `ClientInfoEditor` — silindi (Plan 02 Faz A)
+
+Bu dosyaları "kullanılmıyor" diye işaret etme — zaten silindi.

@@ -100,3 +100,68 @@ try {
 - `'use client'` direktifi eklenen dosyalarda
 - localStorage / sessionStorage kullanan kod yazıldığında
 - Performans yavaşlığı raporu geldiğinde
+
+---
+
+## PivotaraHub'a Özel Bağlam
+
+### Auth Pattern (next-auth v4 + middleware)
+
+- API çağrıları otomatik 401 alır (middleware koruyor, `/login`, `/api/auth/*` hariç)
+- Server-side: `import { getAuthUser } from '@/lib/auth'; const user = await getAuthUser();`
+- Client-side: `import { useSession, signOut } from 'next-auth/react';`
+- Login sayfası: `app/login/page.tsx`, callbackUrl ile geri dönüş
+- `session.user.id` için module augmentation: `types/next-auth.d.ts`
+
+**Yeni client component'te `useSession` çağrılırken `<SessionProvider>` parent zinciri yok** — `app/layout.tsx`'de Provider eklenmedi henüz. Eğer client-side auth state lazımsa **bulgu olarak işaret et**.
+
+### Supabase Pattern
+
+- Tek client: `@/lib/supabase` (RLS-aware anon key). Service role admin client YOK.
+- Server-side fetch'lerde `supabase.from('clients').select('*')` — middleware auth garanti ettiği için kullanıcı bazlı filtre RLS'e bırakılıyor.
+- Client component'te `supabase` doğrudan kullanılırsa: tarayıcıdan RLS aktif çalışır — sorun yok. Ama service role key import edilmemeli (zaten dosya yok).
+
+### Rate Limit Pattern
+
+```typescript
+import { enforceRateLimit } from '@/lib/rateLimitGuard';
+
+export async function POST(request: NextRequest) {
+  const limited = await enforceRateLimit(request, 'ANALYZE');
+  if (limited) return limited;
+  // ...
+}
+```
+
+Preset'ler: `ANALYZE` (5/saat), `DIRECTOR` (20/saat), `TTS` (50/saat), `AGENT_CHAT` (60/saat), `DEFAULT` (100/saat). Pahalı LLM endpoint'te eksikse → **bulgu**.
+
+### Bilinen Büyük Component'ler
+
+- `components/VideoAnalysisForm.tsx` (664 satır, 🔴) — parent'larda dynamic import bekliyor
+- `components/FullScriptTimeline.tsx` — modal içinde, ssr:false uygun
+- `app/clients/[id]/page.tsx` (372 satır, 🟡) — race condition zaten düzeltildi
+- `app/clients/[id]/analysis/page.tsx` (304 satır, 🟡) — Plan 02 ile sadeleşti
+
+### .env / Secret Bağlamı
+
+Client'ta erişilebilir olanlar (sadece `NEXT_PUBLIC_*` prefix):
+- `NEXT_PUBLIC_SUPABASE_URL` — OK
+
+Asla client'a gitmemesi gerekenler:
+- `SUPABASE_SERVICE_ROLE_KEY` (zaten admin client yok, sızıntı riski düşük)
+- `AUTH_PASSWORD`, `NEXTAUTH_SECRET`
+- `OPENAI_API_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `ELEVENLABS_API_KEY`, `SHOTSTACK_API_KEY`
+
+Bunlardan biri `'use client'` dosyasında `process.env.X` ile okunmaya çalışılırsa → **CRITICAL**.
+
+### Cleanup Önemli Yerler
+
+- `lib/scraping/instagram-scraper.ts` — Selenium WebDriver `driver.quit()` finally'da olmalı (process leak riski)
+- Python subprocess (`spawn`) — timeout 300s, kill açık
+- Object URL'ler — varsa `URL.revokeObjectURL()` cleanup
+
+### Hydration Tuzakları
+
+- Server'da `Date.now()` ile timestamp render → mismatch
+- `localStorage` doğrudan render içinde → SSR crash
+- Müşteri/sayfa lokal state'i `useState(() => localStorage.getItem(...))` lazy init pattern'ı yanlış SSR'da

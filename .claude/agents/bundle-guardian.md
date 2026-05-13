@@ -169,3 +169,61 @@ Bu import client bundle'a girer ve {gizli API key / N KB boyut} sorununa yol aç
 - Gerçek bundle boyutu `next build` olmadan kesin değil — tahminleri "tahmini" olarak işaretle
 - Unused import'u "kullanılmıyor" diye silme — test dosyası, type-only import veya runtime require olabilir, belirt
 - Eski sürüm bilgilerini körlemesine raporlama — `npm outdated` çıktısı yerine kullanıcının kararına bırak
+
+---
+
+## PivotaraHub'a Özel Bağlam
+
+### Server-Only SDK'lar — ASLA Client'a Sızmamalı (CRITICAL)
+
+Bu projede 4 AI SDK + scraping kütüphaneleri var. Hepsi server-only:
+
+```typescript
+import { GoogleGenerativeAI } from '@google/generative-ai';  // server-only
+import { GoogleGenAI } from '@google/genai';                 // server-only
+import Anthropic from '@anthropic-ai/sdk';                   // server-only
+import OpenAI from 'openai';                                 // server-only
+import Groq from 'groq-sdk';                                 // server-only
+import { spawn } from 'child_process';                       // server-only (Python subprocess)
+import { Builder } from 'selenium-webdriver';                // server-only
+```
+
+Bunlardan biri `'use client'` dosyasında geçerse → **CRITICAL** (API key sızıntısı + bundle dev cost).
+
+### Kullanılma İhtimali Olan ama Henüz Sızıntı Olmayan Paketler
+
+```
+@anthropic-ai/sdk       — Claude Haiku, FAZ 3 sonrası kullanılacak
+groq-sdk                — Director fallback, FAZ 2 sonrası
+selenium-webdriver      — instagram-scraper.ts (server-only, tip declaration için var)
+chromedriver            — sadece runtime'da, bundle'a girmemeli
+```
+
+### Bilinen Büyük Bağımlılıklar
+
+```
+recharts                — chart sayfalarında, code-split mevcut
+@google/generative-ai   — Gemini SDK, server-only
+selenium-webdriver      — sadece dev/server, tree-shake olmalı
+zod                     — küçük, tüm validasyonlarda
+```
+
+### Bilinen Boş/Atıl Paket Kontrol Noktaları
+
+`scripts/` klasöründeki Python script'leri bundle'a girmez ama `package.json`'da:
+- `next-intl` — şu an kullanılıyor mu? grep ile doğrula
+- `shotstack-sdk` — FAZ 5+ planlandı, şu an kullanılmıyor olabilir
+- `chromedriver` — eğer Selenium Python tarafına alınırsa `npm uninstall chromedriver selenium-webdriver`
+
+### Dynamic Import Adayları
+
+```
+components/VideoAnalysisForm.tsx     — 664 satır, parent'larda dynamic et
+components/FullScriptTimeline.tsx    — modal içinde, ssr: false uygun
+components/PrintPreviewModal.tsx     — modal, lazy
+components/charts/*                  — recharts ağır, dynamic + ssr: false
+```
+
+### Next.js 16 Notları
+
+Next.js **16 App Router** — RSC default. Server component'te `import OpenAI from 'openai'` zaten client'a gitmez (RSC). Asıl risk: `'use client'` dosyalarında veya barrel export'lar üzerinden sızıntı.
