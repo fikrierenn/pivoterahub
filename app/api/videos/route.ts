@@ -1,0 +1,101 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+
+export async function GET() {
+  const { data, error } = await supabase
+    .from('videos')
+    .select(`
+      id,
+      client_id,
+      platform,
+      url,
+      published_at,
+      duration_sec,
+      captions,
+      hashtags,
+      transcript,
+      ai_analysis,
+      video_scores (
+        hook_score,
+        tempo_score,
+        clarity_score,
+        cta_score,
+        visual_score,
+        funnel_stage,
+        main_errors,
+        ai_comment
+      ),
+      video_stats (
+        views,
+        likes,
+        comments,
+        shares,
+        saves,
+        engagement_rate
+      )
+    `)
+    .order('published_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching videos:', error);
+    return NextResponse.json(
+      { error: 'Video listesi alinamadi' },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json(data || []);
+}
+
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json(
+      { error: 'Video id zorunlu' },
+      { status: 400 }
+    );
+  }
+
+  const { error: scoresError } = await supabase
+    .from('video_scores')
+    .delete()
+    .eq('video_id', id);
+
+  if (scoresError) {
+    console.error('Error deleting video scores:', scoresError);
+    return NextResponse.json(
+      { error: 'Video skorlarini silme basarisiz' },
+      { status: 500 }
+    );
+  }
+
+  const { error: statsError } = await supabase
+    .from('video_stats')
+    .delete()
+    .eq('video_id', id);
+
+  if (statsError) {
+    console.error('Error deleting video stats:', statsError);
+    return NextResponse.json(
+      { error: 'Video istatistiklerini silme basarisiz' },
+      { status: 500 }
+    );
+  }
+
+  const { error: videoError } = await supabase
+    .from('videos')
+    .delete()
+    .eq('id', id);
+
+  if (videoError) {
+    console.error('Error deleting video:', videoError);
+    return NextResponse.json(
+      { error: 'Video silme basarisiz' },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ success: true });
+}
