@@ -35,3 +35,13 @@ next-env.d.ts
 
 # temp files
 /tmp
+
+# debug & one-off scripts
+*.log
+FULL_PROJECT_CODE.txt
+PROJE_DOKUMU_son.txt
+test-*.js
+find-*.js
+list-*.js
+export_*.js
+TUM_PROJE_KODLARI.txt
