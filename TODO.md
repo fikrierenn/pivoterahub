@@ -23,8 +23,8 @@
   - 🟡 `app/videos/page.tsx` (411 satır) — filter/list/grid component'leri ayır
 - Python scraper error handling güçlendir
 
-- **Performans optimizasyonu — Tier 3 (plan gerektirir):**
-  - `complete-analysis/route.ts` — Instagram + LLM zincirini paralelleştir (~20-50s latency düşüşü, kullanıcı 5+ dakika bekliyor)
+- **Performans optimizasyonu — Tier 3:**
+  - ✅ `complete-analysis/route.ts` — paralelleştirme TAMAMLANDI (Plan 03, commit fc4ebd0)
   - `VideoAnalysisForm.tsx` — parent'larda `dynamic()` import (~15-25KB initial JS azalır)
   - `lib/llm/video-analysis.ts` — `generatePlanVariations` fallback'ini kaldır, ana prompt'ta `responseSchema` ile 3 plan enforce et (~%40 Gemini token tasarrufu)
   - `videos/page.tsx` — search index pre-compute (100+ kayıtta filter typing lag düşer)
