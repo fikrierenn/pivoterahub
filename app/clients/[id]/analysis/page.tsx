@@ -24,8 +24,6 @@ export default function ClientAnalysisPage() {
       const response = await fetch(`/api/clients/${clientId}`);
       if (response.ok) {
         const result = await response.json();
-        console.log('Analysis data loaded:', result); // Debug
-        console.log('Profile Card:', result.profileCard); // Debug
         setData(result);
       }
     } catch (error) {

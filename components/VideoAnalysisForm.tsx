@@ -208,7 +208,6 @@ export default function VideoAnalysisForm({ isOpen, onClose, onSuccess, clientId
       }
 
       const result = await response.json();
-      console.log('Video analysis result:', result);
       setAnalysisResult(result);
 
       setFormData({
