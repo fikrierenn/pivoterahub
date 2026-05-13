@@ -1,57 +1,74 @@
 # Dosya Boyutu Disiplini
 
-## Eşikler
+## Kural
 
-| Dosya tipi | UYARI eşiği | BÖLME zorunlu |
-|------------|-------------|---------------|
-| Component / View (tsx, cshtml, vue) | 250 satır | 400 satır |
-| Servis / İş mantığı (.ts, .cs, .py) | 300 satır | 500 satır |
-| API route / Controller | 200 satır | 350 satır |
-| Util / helper | 150 satır | 250 satır |
-| Config / template (JSON) | — | 1000 satır |
-| Migration | — | (eşiksiz, atomik kalmalı) |
+**Yeni yazılan/düzenlenen dosyalar 300 satırın altında kalmalı.**
+**500 satır kırmızı çizgi — bir sonraki PR'da split zorunlu.**
 
-> Eşik **gerekçeli istisnası** olabilir — kural dosyasına not düş (örn: `lib/llm/prompts.ts` 800 satır → "prompt sabit, bölmek anlam taşımaz").
+Tip bazlı yumuşak hedefler (300'den daha sıkı olanlar):
+
+| Dosya tipi | Hedef |
+|------------|-------|
+| API route / Controller action | 200 satır |
+| Util / helper | 150 satır |
+
+Migration, JSON config, generated code ve büyük prompt sabitleri istisna — gerekçe dosya başına yorum olarak yazılır.
+
+## Neden
+
+Tek dosyada iç içe 5+ feature → merge conflict, test zorluğu, yeni geliştirici onboarding yükü, AI agent okurken context tüketimi. Solo dev için bile context switch maliyeti.
+
+## Uygulama
+
+- **Yeni dosya:** Şüpheliysen önce parçala, sonra yaz.
+- **Mevcut büyük dosya (legacy):** TODO backlog'a + "Known debt" notu + faz planla. Touch ettikçe azalt — yeni satır eklerken ilgisiz 30 satırı çıkar/böl.
+- **Touch kuralı:** Dokunduğun büyük dosyada **en az** çevre 50 satır iyileşmesi yapılabiliyorsa yap (kullanıcı onayıyla). Yapamıyorsan TODO'ya not düş.
 
 ## Bölme Stratejileri
 
-### Component dosyası büyüdüyse
-1. **Alt component çıkar** — UI parçası tekrar kullanılıyor mu? Kullanılmıyorsa bile okunabilirlik için ayır.
-2. **Custom hook** — state mantığını `useFeatureName.ts`'ye taşı.
-3. **Type'ları ayır** — `Component.types.ts` dosyası.
-4. **Constants ayır** — `Component.constants.ts`.
+**Component / View:**
+- Alt component çıkar (tekrar kullanılmasa bile okunabilirlik için)
+- State mantığını `useFeatureName.ts` custom hook'a taşı
+- Type/constants ayrı dosya (`*.types.ts`, `*.constants.ts`)
 
-### Servis dosyası büyüdüyse
-1. **Tek sorumluluk başına dosya** — `userService.ts` 600 satırsa → `userQueries.ts`, `userMutations.ts`, `userValidation.ts`.
-2. **Pure fonksiyonları utils'e çıkar**.
-3. **Class büyükse** → composition pattern, alt servislere böl.
+**Servis / İş Mantığı:**
+- Tek sorumluluk başına dosya (örn: `userService.ts` → `userQueries.ts` + `userMutations.ts` + `userValidation.ts`)
+- Pure fonksiyonları utils'e çıkar
+- Class büyükse composition pattern
 
-### API route büyüdüyse
-1. **Handler logic'i servise taşı** — route sadece auth/validation/response.
-2. **Validation şemalarını ayır** — `schemas/[route].ts`.
+**API Route / Controller:**
+- Handler logic'i servise taşı — route sadece auth + validation + response
+- Validation şemalarını ayrı dosyaya
 
-## Tetikleyici Pattern
+## Periyodik Tarama
 
-Dosya 400 satıra yaklaştığında Claude şunu yapar:
-1. Mevcut dosyada **logical groupings** belirle (yorumlardan, fonksiyon kümelerinden)
-2. Bölme planını **kullanıcıya sun** — onaysız bölmez
-3. Onay sonrası: yeni dosyaları yarat, eski dosyayı re-export hub'ı yap (backwards compat)
+```bash
+# 300+ satır dosyalar, sıralı
+find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.cs" -o -name "*.py" \) \
+  -not -path "./node_modules/*" -not -path "./.next/*" -not -path "./bin/*" -not -path "./obj/*" \
+  -exec wc -l {} \; | awk '$1 > 300' | sort -rn | head -20
+```
+
+Çıktıdaki dosyalar `TODO.md` backlog'una düşer. 500+ olanlar **kırmızı çizgi** — sonraki PR'da split.
+
+## Snapshot (Mevcut Büyük Dosyalar)
+
+> Touch edilince güncelle. Bir dosya bölündüğünde buradan sil.
+
+**🔴 Kırmızı çizgi (500+):**
+- `components/VideoAnalysisForm.tsx` — 664 satır → alt component + hook ayır
+- `lib/llm/video-analysis.ts` — 613 satır → prompt sabitleri ayrı dosyaya
+- `app/clients/[id]/page.tsx` — 556 satır → sekme bazında component split
+
+**🟡 Hedef üstü (300-500):**
+- `app/clients/[id]/analysis/page.tsx` — 469 satır
+- `app/videos/page.tsx` — 411 satır
+
+Snapshot tarihi: 2026-05-13
 
 ## Anti-Pattern
 
-- ❌ Tek satır eklemek için "zaten 800 satır, sorun değil"
-- ❌ Plan yapmadan dosyayı parçala (referans kırılır)
-- ❌ "Bölmeye gerek yok" gerekçesiz savunma
-- ❌ İstenmedikçe drive-by refactor
-
-## Ölçüm
-
-Periyodik tarama:
-```bash
-# 400+ satır dosyalar
-find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.cs" -o -name "*.py" \) \
-  -not -path "./node_modules/*" -not -path "./.next/*" \
-  -exec wc -l {} \; | awk '$1 > 400' | sort -rn | head -20
-```
-
-Çıktı periyodik olarak `TODO.md` backlog'a yazılır — bölünmesi gereken dosyalar listesi.
+- ❌ "Zaten 800 satır, sorun değil" → bir satır daha ekle
+- ❌ Plan yapmadan dosyayı parçala → referans kırılır
+- ❌ Drive-by refactor — kullanıcı istemediği halde 5 dosya böl
+- ❌ "İlerde bölerim" → TODO'ya yazmazsan kaybolur
