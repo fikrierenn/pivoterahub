@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase';
 import { generateProfessionalAnalysis, generateAIProfileCard } from '@/lib/llm/professional-analysis';
 import { generateDevelopmentPlan } from '@/lib/llm/development-plan';
 import { generateClientPresentation } from '@/lib/llm/client-presentation';
-import { scrapeCompetitors } from '@/lib/scraping/competitor-scraper';
 import { analyzeCompetitors } from '@/lib/llm/competitor-analysis';
 
 export async function POST(
@@ -158,12 +157,24 @@ export async function POST(
     console.log('ğŸ“± Instagram bio analizi baÅŸlÄ±yor...');
     let instagramAnalysis = null;
     
+    type InstagramProfileSnapshot = {
+      username: string;
+      followers: number;
+      following: number;
+      posts: number;
+      bio: string;
+      isVerified: boolean;
+      isPrivate: boolean;
+      recentPosts: unknown[];
+    };
+    let profile: InstagramProfileSnapshot | null = null;
+
     try {
       if (client.ig_handle) {
         // Python Instagram Scraper kullan
         const { PythonInstagramScraper } = await import('@/lib/scraping/python-instagram-scraper');
         const pythonScraper = new PythonInstagramScraper();
-        
+
         console.log('Starting Python Instagram scraper...');
         const pythonProfile = await pythonScraper.scrapeProfile(client.ig_handle);
         if (pythonProfile) {

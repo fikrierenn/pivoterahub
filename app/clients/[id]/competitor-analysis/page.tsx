@@ -21,6 +21,8 @@ interface CompetitorData {
     video_ratio: number;
     photo_ratio: number;
   };
+  /** Scrape başarısızsa server tarafında doldurulur. */
+  error?: string;
 }
 
 export default function CompetitorAnalysisPage() {
