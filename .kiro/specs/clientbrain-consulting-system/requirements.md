@@ -1,8 +1,14 @@
-# ClientBrain – Video Modülü Gereksinimler (V1)
+# ClientBrain – Profesyonel Danışmanlık Sistemi Gereksinimler (V2)
 
 ## 1. Genel Bakış
 
-ClientBrain Video Modülü, danışmanlık müşterilerinin sosyal medya video içeriklerini analiz etmek, performans takibi yapmak ve hashtag analitiği sunmak için tasarlanmıştır. Sistem; video analizi, skorlama, performans metrikleri ve hashtag performans takibini tek bir platformda birleştirir.
+ClientBrain Profesyonel Danışmanlık Sistemi, sosyal medya danışmanlığı sürecini otomatikleştiren kapsamlı bir platformdur. Sistem; minimal görüşme formu, AI destekli profesyonel analiz, rakip analizi, gelişim planı ve müşteri sunumu oluşturmayı tek bir akışta birleştirir. 
+
+**Ana Bileşenler:**
+- 🟦 Profesyonel Analiz (Danışman gözüyle değerlendirme)
+- 🟩 AI Profil Kartı (Otomatik strateji üretimi)
+- 🟧 Gelişim Planı (30+90 günlük roadmap)
+- 🟥 Müşteri Sunumu (Hazır rapor formatı)
 
 ---
 
@@ -10,127 +16,128 @@ ClientBrain Video Modülü, danışmanlık müşterilerinin sosyal medya video i
 
 ### REQ-1: Müşteri Yönetimi
 **WHEN** sistem yeni bir müşteri kaydı aldığında,  
-**THEN** sistem **SHALL** müşterinin adını, sektörünü, şehrini, Instagram handle'ını, haftalık içerik kapasitesini ve konumlandırmasını (positioning) kaydetmeli.
+**THEN** sistem **SHALL** müşterinin adını, sektörünü, şehrini, Instagram handle'ını, haftalık içerik kapasitesini, konumlandırmasını ve durumunu (status) kaydetmeli.
 
 **Kabul Kriterleri:**
 - Müşteri kaydı `clients` tablosuna uuid ile eklenir
+- Status alanı: lead, prospect, active, inactive, completed
 - Sektör, şehir ve ig_handle alanları indekslenir
 - created_at ve updated_at otomatik atanır
 
 ---
 
-### REQ-2: Video Kaydı
-**WHEN** sistem yeni bir video analiz talebi aldığında,  
-**THEN** sistem **SHALL** videonun platform bilgisini (instagram/tiktok/youtube), URL'ini, yayın tarihini, süresini, caption'ını, hashtag'lerini ve transkriptini kaydetmeli.
+### REQ-2: Minimal Görüşme Formu
+**WHEN** müşteri için görüşme formu doldurulduğunda,  
+**THEN** sistem **SHALL** temel bilgileri, hedefleri, rakip bilgilerini ve görüşme notlarını JSONB formatında kaydetmeli.
 
 **Kabul Kriterleri:**
-- Video kaydı `videos` tablosuna eklenir
-- client_id foreign key ile clients tablosuna bağlanır
-- platform değeri sadece 'instagram', 'tiktok' veya 'youtube' olabilir
-- hashtags text[] formatında saklanır
-- transcript alanı Whisper çıktısını tutar
+- Form verileri `client_intake_forms` tablosuna JSONB olarak kaydedilir
+- Minimal form: business_name, sector, location, main_goals, competitors, competitive_advantage, meeting_notes
+- template_id ile `intake_form_templates` tablosuna bağlanır
+- Esnek yapı: yeni sorular kod değişikliği olmadan eklenebilir
 
 ---
 
-### REQ-3: Video Skorlama
-**WHEN** bir video analiz edildiğinde,  
-**THEN** sistem **SHALL** videonun hook, tempo, clarity, CTA ve visual skorlarını (0-10 arası) hesaplamalı ve funnel stage'ini (cold/warm/hot/sale) belirlemelidir.
+### REQ-3: Profesyonel Analiz (🟦)
+**WHEN** görüşme formu tamamlandığında,  
+**THEN** sistem **SHALL** müşterinin mevcut seviyesini, darboğazlarını, stratejik hatalarını, güçlü/zayıf yanlarını ve büyüme potansiyelini analiz etmeli.
 
 **Kabul Kriterleri:**
-- Her video için maksimum 1 skor kaydı tutulur (video_id UNIQUE)
-- Tüm skorlar 0-10 arası smallint değerdir
-- funnel_stage sadece 'cold', 'warm', 'hot' veya 'sale' olabilir
-- main_errors text[] formatında hata listesi tutar
-- ai_comment alanı LLM yorumunu içerir
+- Analiz `professional_analysis` tablosuna kaydedilir
+- GPT-4o ile danışman perspektifinden objektif değerlendirme
+- 6 ana kategori: current_level_assessment, main_bottlenecks, strategic_mistakes, strengths, weaknesses, realistic_growth_potential
+- Her müşteri için tek analiz kaydı (client_id UNIQUE)
 
 ---
 
-### REQ-4: Performans Metrikleri
-**WHEN** bir video için performans verileri sağlandığında,  
-**THEN** sistem **SHALL** views, likes, comments, shares ve saves metriklerini kaydetmeli ve engagement_rate'i hesaplamalıdır.
+### REQ-4: AI Profil Kartı (🟩)
+**WHEN** profesyonel analiz tamamlandığında,  
+**THEN** sistem **SHALL** profil özeti, konumlandırma stratejisi, hedef kitle, içerik stratejisi, fırsatlar/riskler ve 3 aylık yol haritası oluşturmalı.
 
 **Kabul Kriterleri:**
-- video_stats tablosuna kayıt eklenir
-- engagement_rate = (likes + comments + shares + saves) / views
-- snapshot_date ile aynı video için birden fazla snapshot tutulabilir
-- video_id ve snapshot_date kombinasyonu UNIQUE olmalıdır
+- Profil kartı `ai_profile_card` tablosuna kaydedilir
+- GPT-4o ile otomatik strateji üretimi
+- 7 ana bileşen: profile_summary, positioning_strategy, target_audience, content_strategy, opportunities, risks, three_month_roadmap
+- three_month_roadmap JSONB formatında aylık hedefler
 
 ---
 
-### REQ-5: Hashtag Performans Takibi
-**WHEN** yeni bir video hashtag'leri ile eklendiğinde,  
-**THEN** sistem **SHALL** her hashtag için kullanım sayısını, toplam izlenmeyi, ortalama izlenmeyi ve ortalama engagement oranını güncellemelidir.
+### REQ-5: Gelişim Planı (🟧)
+**WHEN** AI profil kartı oluşturulduktan sonra,  
+**THEN** sistem **SHALL** 30 günlük ve 90 günlük detaylı gelişim planı, video sıklığı, içerik kategorileri, ton rehberi ve performans hedefleri oluşturmalı.
 
 **Kabul Kriterleri:**
-- hashtag_stats tablosunda client_id ve hashtag kombinasyonu UNIQUE
-- usage_count her yeni kullanımda +1 artar
-- total_views video izlenmeleri ile güncellenir
-- avg_views = total_views / usage_count
-- last_used_at güncellenir
+- Plan `development_plan` tablosuna kaydedilir
+- first_30_days ve first_90_days JSONB formatında haftalık/aylık görevler
+- video_frequency, content_categories, tone_guidelines, content_themes, performance_targets
+- Uygulanabilir ve ölçülebilir hedefler
 
 ---
 
-### REQ-6: Video Analiz API
-**WHEN** POST /api/video-analysis endpoint'ine istek geldiğinde,  
-**THEN** sistem **SHALL** videoyu kaydetmeli, transkript almalı, LLM ile skorlamalı ve tüm ilgili tabloları (videos, video_scores, video_stats, hashtag_stats) güncellemelidir.
+### REQ-6: Müşteri Sunumu (🟥)
+**WHEN** tüm analizler tamamlandığında,  
+**THEN** sistem **SHALL** müşteriye sunulacak profesyonel raporu HTML formatında oluşturmalı ve yönetici özeti, durum analizi, öneriler, aksiyon planı ve beklenen sonuçları içermeli.
 
 **Kabul Kriterleri:**
-- Request JSON şeması: client_id, platform, url, duration_sec, captions, hashtags, metrics
-- Response JSON şeması: video, scores, stats
-- Whisper ile transcript üretilir
-- LLM ile skorlar hesaplanır
-- hashtag_stats otomatik güncellenir
+- Sunum `client_presentation` tablosuna kaydedilir
+- 5 ana bölüm: executive_summary, current_situation_analysis, strategic_recommendations, action_plan, expected_results
+- presentation_html hazır HTML formatında
+- Müşteriye hitap eden, profesyonel ve ikna edici ton
 
 ---
 
-### REQ-7: Gelişim Raporu API
-**WHEN** POST /api/growth-report endpoint'ine tarih aralığı ile istek geldiğinde,  
-**THEN** sistem **SHALL** toplam video sayısını, ortalama izlenmeyi, engagement oranını, son videoların performansını, kategori performansını, hashtag performansını ve LLM tabanlı değerlendirmeyi döndürmelidir.
+### REQ-7: Rakip Analizi
+**WHEN** görüşme formunda rakip bilgileri sağlandığında,  
+**THEN** sistem **SHALL** Selenium ile Instagram profillerini analiz etmeli ve AI ile rakip konumlandırma, içerik yaklaşımı ve pazar durumu analizi yapmalı.
 
 **Kabul Kriterleri:**
-- Request JSON şeması: client_id, date_from, date_to, limit_last_videos
-- Response JSON şeması: summary, last_videos, category_performance, hashtag_performance, ai_evaluation
-- Önceki dönem ile karşılaştırma (change_vs_previous_period)
-- Top ve weak hashtag listeleri
-- AI summary_text ve action_items (Türkçe)
+- Selenium ile Instagram scraping: followers, bio, posts, verification status
+- Analiz `competitor_analysis` tablosuna kaydedilir
+- competitors_data JSONB formatında scraping verileri
+- AI analizi: market_positioning, content_strategy, audience_analysis, competitive_advantages
+- Headless Chrome ile arka planda çalışma
 
 ---
 
-### REQ-8: LLM Video Analizi
-**WHEN** bir video skorlanması gerektiğinde,  
-**THEN** sistem **SHALL** client profili, video meta verileri, transcript ve önceki skorları LLM'e göndermeli ve JSON formatında skor, hata listesi ve yorum almalıdır.
+### REQ-8: Komple Analiz API
+**WHEN** POST /api/clients/[id]/complete-analysis endpoint'ine istek geldiğinde,  
+**THEN** sistem **SHALL** tüm 4 aşamalı analizi sırayla çalıştırmalı ve sonuçları kaydetmelidir.
 
 **Kabul Kriterleri:**
-- System prompt: "You are an expert social media video coach..."
-- Input: client_profile, video_meta, transcript, previous_scores
-- Output: hook_score, tempo_score, clarity_score, cta_score, visual_score, funnel_stage, main_errors, ai_comment, improvement_suggestions
-- JSON formatında yanıt
+- Sıralı işlem: Profesyonel Analiz → AI Profil Kartı → Gelişim Planı → Müşteri Sunumu
+- Rakip analizi paralel olarak arka planda çalışır
+- Her aşama önceki aşamanın çıktısını kullanır
+- Hata durumunda hangi aşamada kaldığı belirtilir
+- Toplam süre < 60 saniye
 
 ---
 
-### REQ-9: LLM Gelişim Değerlendirmesi
-**WHEN** gelişim raporu oluşturulduğunda,  
-**THEN** sistem **SHALL** toplam metrikleri, video performanslarını, kategori ve hashtag analizlerini LLM'e göndermeli ve Türkçe özet + aksiyon maddeleri almalıdır.
+### REQ-9: Dinamik Form Sistemi
+**WHEN** görüşme formu şablonu güncellendiğinde,  
+**THEN** sistem **SHALL** yeni soruları kod değişikliği olmadan formda göstermeli ve cevapları JSONB formatında kaydetmelidir.
 
 **Kabul Kriterleri:**
-- System prompt: "You are a data analyst and content coach..."
-- Input: period, current_period, previous_period, last_videos, category_performance, hashtag_performance
-- Output: summary_text (Türkçe), action_items (5 madde, Türkçe)
-- JSON formatında yanıt
+- intake_form_templates tablosunda questions JSONB formatında
+- Form renderer dinamik olarak soruları oluşturur
+- Soru tipleri: text, textarea, select, multiselect, number, json
+- is_default template otomatik yüklenir
+- Geriye uyumluluk korunur
 
 ---
 
 ## 3. Teknik Gereksinimler
 
-### REQ-10: Veritabanı
+### REQ-10: Veritabanı Şeması
 **WHEN** sistem kurulduğunda,  
-**THEN** sistem **SHALL** Postgres/Supabase üzerinde clients, videos, video_scores, video_stats ve hashtag_stats tablolarını oluşturmalıdır.
+**THEN** sistem **SHALL** Postgres/Supabase üzerinde danışmanlık sistemi için gerekli tabloları oluşturmalıdır.
 
 **Kabul Kriterleri:**
+- Ana tablolar: clients, intake_form_templates, client_intake_forms
+- Analiz tabloları: professional_analysis, ai_profile_card, development_plan, client_presentation, competitor_analysis
 - Tüm ID'ler uuid (gen_random_uuid())
-- Tüm zaman alanları timestamptz
+- JSONB alanları: questions, answers, three_month_roadmap, competitors_data
 - Foreign key'ler ON DELETE CASCADE
-- Gerekli indeksler oluşturulur
+- RLS politikaları aktif
 
 ---
 
@@ -139,25 +146,26 @@ ClientBrain Video Modülü, danışmanlık müşterilerinin sosyal medya video i
 **THEN** sistem **SHALL** foreign key bağlantılarını, UNIQUE constraint'leri ve CHECK constraint'leri uygulamalıdır.
 
 **Kabul Kriterleri:**
-- video_scores.video_id UNIQUE
-- video_stats (video_id, snapshot_date) UNIQUE
-- hashtag_stats (client_id, hashtag) UNIQUE
-- platform CHECK (platform IN ('instagram', 'tiktok', 'youtube'))
-- funnel_stage CHECK (funnel_stage IN ('cold','warm','hot','sale'))
-- Skorlar CHECK (score BETWEEN 0 AND 10)
+- Her müşteri için tek analiz kaydı (client_id UNIQUE per table)
+- Status CHECK (status IN ('lead', 'prospect', 'active', 'inactive', 'completed'))
+- Template is_default sadece bir kayıtta true olabilir
+- JSONB alanları valid JSON formatında
+- Cascade delete: müşteri silindiğinde tüm analizleri silinir
 
 ---
 
 ## 4. Performans Gereksinimleri
 
-### REQ-12: API Yanıt Süresi
+### REQ-12: API Performansı
 **WHEN** API endpoint'lerine istek geldiğinde,  
-**THEN** sistem **SHALL** video-analysis için 20 saniye, growth-report için 10 saniye içinde yanıt vermelidir.
+**THEN** sistem **SHALL** belirtilen süre limitleri içinde yanıt vermelidir.
 
 **Kabul Kriterleri:**
-- /api/video-analysis < 20 saniye
-- /api/growth-report < 10 saniye
-- Timeout durumunda uygun hata mesajı
+- /api/clients/[id]/complete-analysis < 60 saniye (tüm 4 aşama)
+- /api/intake-questions < 2 saniye
+- /api/clients/[id]/intake < 5 saniye (form kaydetme)
+- Selenium scraping < 30 saniye (rakip başına)
+- Timeout durumunda uygun hata mesajı ve progress bilgisi
 
 ---
 
@@ -165,9 +173,39 @@ ClientBrain Video Modülü, danışmanlık müşterilerinin sosyal medya video i
 
 ### REQ-13: Veri Güvenliği
 **WHEN** API istekleri yapıldığında,  
-**THEN** sistem **SHALL** authentication token kontrolü yapmalı ve her müşteri verisi izole edilmelidir.
+**THEN** sistem **SHALL** veri güvenliğini ve gizliliğini sağlamalıdır.
 
 **Kabul Kriterleri:**
-- API access token zorunlu
+- Supabase RLS politikaları aktif
 - client_id bazlı veri izolasyonu
-- Rate limiting uygulanır
+- Selenium headless mode (gizli tarama)
+- LLM API key'leri environment variable'larda
+- Rate limiting: dakikada 10 analiz isteği
+- SSL/TLS şifreleme zorunlu
+
+---
+
+### REQ-14: UI/UX Gereksinimleri
+**WHEN** kullanıcı müşteri yönetimi yaparken,  
+**THEN** sistem **SHALL** sezgisel ve kullanıcı dostu arayüz sağlamalıdır.
+
+**Kabul Kriterleri:**
+- Müşteri listesi: durum filtreleme, arama, sıralama
+- Müşteri detay: analiz butonları, progress göstergesi, sonuç görüntüleme
+- Form: dinamik soru rendering, validasyon, otomatik kaydetme
+- Rapor: HTML preview, PDF indirme, paylaşım linki
+- Responsive tasarım (mobil uyumlu)
+
+---
+
+### REQ-15: Hata Yönetimi
+**WHEN** sistem hatası oluştuğunda,  
+**THEN** sistem **SHALL** kullanıcıya anlaşılır hata mesajı göstermeli ve loglamalıdır.
+
+**Kabul Kriterleri:**
+- LLM API hataları: retry mekanizması (3 deneme)
+- Selenium hataları: alternatif scraping yöntemi
+- Veritabanı hataları: transaction rollback
+- Network hataları: timeout ve retry
+- Kullanıcı dostu hata mesajları (Türkçe)
+- Console ve Supabase logları
