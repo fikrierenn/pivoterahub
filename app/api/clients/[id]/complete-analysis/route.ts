@@ -165,8 +165,9 @@ export async function POST(
         const pythonScraper = new PythonInstagramScraper();
         
         console.log('Starting Python Instagram scraper...');
-        const pythonProfile = await pythonScraper.scrapeProfile(client.ig_handle);\n        if (pythonProfile) {
-          // Python response'unu eski format'a Ã§evir
+        const pythonProfile = await pythonScraper.scrapeProfile(client.ig_handle);
+        if (pythonProfile) {
+          // Python response'unu eski format'a çevir
           profile = {
             username: pythonProfile.username,
             followers: pythonProfile.followers,
@@ -192,7 +193,13 @@ export async function POST(
             isPrivate: false,
             recentPosts: []
           };
-        \n        }\n\n        if (!pythonProfile) {\n          throw new Error('Instagram profil verisi alinamadi');\n        }\n\n        if (profile) {
+        }
+
+        if (!pythonProfile) {
+          throw new Error('Instagram profil verisi alinamadi');
+        }
+
+        if (profile) {
           // Bio analizi yap
           const { analyzeInstagramBio } = await import('@/lib/llm/instagram-analysis');
           const bioAnalysis = await analyzeInstagramBio(profile.bio, clientData);

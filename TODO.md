@@ -2,8 +2,9 @@
 
 ## BİRLEŞİK ÖNCELİK SIRASI
 
-1. **[G-01] · Auth Sistemi** — FAZ 1 — next-auth CredentialsProvider, middleware, login sayfası, tüm route'lara auth ekle
-2. **[G-02] · Rate Limiting** — FAZ 1 — rateLimit.ts, tüm AI endpoint'lere uygula
+1. ✅ **[G-01] · Auth Sistemi** — TAMAMLANDI (commit 7aa1e0b) — next-auth v4 + middleware tüm route'ları koruyor (API → 401 JSON, sayfa → /login redirect)
+2. **[G-02] · Rate Limiting** — FAZ 1 — `lib/rateLimit.ts` hazır, AI endpoint'lere uygulama bekliyor (analyze, bio-analysis, competitor-analysis, complete-analysis, video-performance, video-analysis, growth-report, land-script, video-metadata, video-production/render)
+2b. **[T-02] · `complete-analysis/route.ts` encoding fix** — TS1127 Invalid character hataları, dosya UTF-8 BOM/karakter sorunu
 3. **[F-01] · Director AI** — FAZ 2 — GPT-4o Vision sinematik analiz, scene_director/script_rewrite/full_rewrite
 4. **[F-02] · FrameAgent** — FAZ 3 — Claude chat asistanı, skill sistemi, auto-analysis
 5. **[M-01] · Supabase Migration** — FAZ 4 — cinematic_analysis sütunu, agent_analyses tablosu
