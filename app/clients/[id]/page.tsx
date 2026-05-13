@@ -165,32 +165,44 @@ export default function ClientDetailPage() {
                 📋 Görüşme Formu Doldur
               </Link>
             ) : (
-              <div className="flex gap-3">
-                <button
-                  onClick={startCompleteAnalysis}
-                  disabled={analyzing}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                >
-                  {analyzing ? '🔄 Analiz Ediliyor...' : '🚀 Komple Analiz Başlat'}
-                </button>
-                <Link
-                  href={`/clients/${clientId}/bio-analysis`}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                >
-                  📱 Bio Analizi
-                </Link>
-                <Link
-                  href={`/clients/${clientId}/competitor-analysis`}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
-                >
-                  🏆 Rakip Analizi
-                </Link>
-                <Link
-                  href={`/clients/${clientId}/video-performance`}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  🎯 Viral Analiz
-                </Link>
+              <div className="flex gap-3 items-stretch">
+                <details className="relative group">
+                  <summary className="list-none cursor-pointer select-none px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2">
+                    {analyzing ? '🔄 Analiz Ediliyor…' : '🧠 Analizler'}
+                    <span className="text-xs opacity-70 group-open:rotate-180 transition-transform">▾</span>
+                  </summary>
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-slate-200 z-10 overflow-hidden">
+                    <button
+                      onClick={startCompleteAnalysis}
+                      disabled={analyzing}
+                      className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <div className="font-medium text-slate-900">🚀 Komple Analiz</div>
+                      <div className="text-xs text-slate-500">Tüm analizleri tek seferde çalıştır</div>
+                    </button>
+                    <Link
+                      href={`/clients/${clientId}/bio-analysis`}
+                      className="block px-4 py-3 hover:bg-slate-50 border-b border-slate-100"
+                    >
+                      <div className="font-medium text-slate-900">📱 Bio Analizi</div>
+                      <div className="text-xs text-slate-500">Instagram profil incelemesi</div>
+                    </Link>
+                    <Link
+                      href={`/clients/${clientId}/competitor-analysis`}
+                      className="block px-4 py-3 hover:bg-slate-50 border-b border-slate-100"
+                    >
+                      <div className="font-medium text-slate-900">🏆 Rakip Analizi</div>
+                      <div className="text-xs text-slate-500">SWOT + pazar fırsatları</div>
+                    </Link>
+                    <Link
+                      href={`/clients/${clientId}/video-performance`}
+                      className="block px-4 py-3 hover:bg-slate-50"
+                    >
+                      <div className="font-medium text-slate-900">🎯 Viral Analiz</div>
+                      <div className="text-xs text-slate-500">Video performans örüntüleri</div>
+                    </Link>
+                  </div>
+                </details>
                 <button
                   onClick={() => setShowVideoAnalysisForm(true)}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -198,12 +210,12 @@ export default function ClientDetailPage() {
                   🎥 Video Analizi Yap
                 </button>
                 {clientData?.professionalAnalysis && (
-                  <button 
-                    onClick={() => window.open(`/clients/${clientId}/analysis`, '_blank')}
+                  <Link
+                    href={`/clients/${clientId}/analysis`}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
                     📊 Raporu Görüntüle
-                  </button>
+                  </Link>
                 )}
               </div>
             )}
