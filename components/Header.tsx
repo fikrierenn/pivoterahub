@@ -15,7 +15,7 @@ export default function Header() {
   const [showVideoAnalysisForm, setShowVideoAnalysisForm] = useState(false);
 
   return (
-    <header className="bg-white border-b border-zinc-200 h-12 fixed top-0 right-0 left-56 z-10">
+    <header className="bg-white border-b border-slate-200 h-14 fixed top-0 right-0 left-56 z-10 shadow-sm">
       <div className="h-full px-4 flex items-center gap-4">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
@@ -23,19 +23,19 @@ export default function Header() {
           <input
             type="text"
             placeholder="Ara..."
-            className="w-full pl-9 pr-4 py-1.5 text-sm bg-zinc-100 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-300 focus:bg-white placeholder-zinc-400 transition-colors"
+            className="w-full pl-9 pr-4 py-1.5 text-sm bg-slate-100 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-white placeholder-slate-400 transition-colors"
           />
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 ml-auto">
-          <button className="text-sm text-zinc-600 hover:text-zinc-900 px-3 py-1.5 rounded-md hover:bg-zinc-100 transition-colors flex items-center gap-1.5">
+          <button className="text-sm text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-100 transition-colors flex items-center gap-1.5">
             <Plus className="w-3.5 h-3.5" />
             Yeni Müşteri
           </button>
           <button
             onClick={() => setShowVideoAnalysisForm(true)}
-            className="text-sm bg-zinc-900 text-white px-3 py-1.5 rounded-md hover:bg-zinc-700 transition-colors"
+            className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors"
           >
             Video Analizi
           </button>

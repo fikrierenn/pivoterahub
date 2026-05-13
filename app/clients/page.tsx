@@ -2,6 +2,17 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Plus } from 'lucide-react';
 
+type Client = {
+  id: string;
+  name: string;
+  sector: string;
+  city: string | null;
+  ig_handle: string | null;
+  weekly_content_capacity: number;
+  positioning: string | null;
+  status: string;
+};
+
 async function getClients() {
   try {
     const { data, error } = await supabase
@@ -46,7 +57,7 @@ export default async function ClientsPage() {
         </div>
         <Link
           href="/clients/new"
-          className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-700 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Yeni Müşteri
@@ -56,7 +67,7 @@ export default async function ClientsPage() {
       {/* Status Filter */}
       <div className="bg-white border border-zinc-200 rounded-xl px-4 py-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <button className="px-3 py-1.5 bg-zinc-900 text-white rounded-md text-xs font-medium">
+          <button className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-medium">
             Tümü ({clients.length})
           </button>
           {(Object.keys(STATUS_CONFIG) as StatusKey[]).map(key => (
@@ -64,7 +75,7 @@ export default async function ClientsPage() {
               key={key}
               className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors hover:opacity-80 ${STATUS_CONFIG[key].badge}`}
             >
-              {STATUS_CONFIG[key].label} ({clients.filter((c: any) => c.status === key).length})
+              {STATUS_CONFIG[key].label} ({clients.filter((c: Client) => c.status === key).length})
             </button>
           ))}
         </div>
@@ -76,7 +87,7 @@ export default async function ClientsPage() {
           <p className="text-zinc-500 text-sm mb-4">Henüz müşteri yok</p>
           <Link
             href="/clients/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             İlk Müşteriyi Ekle
@@ -95,7 +106,7 @@ export default async function ClientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
-              {clients.map((client: any) => {
+              {clients.map((client: Client) => {
                 const statusKey = (client.status in STATUS_CONFIG ? client.status : 'lead') as StatusKey;
                 const status = STATUS_CONFIG[statusKey];
 

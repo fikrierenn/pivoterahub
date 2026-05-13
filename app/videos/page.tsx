@@ -240,7 +240,7 @@ export default function VideosPage() {
         </div>
         <button
           onClick={() => setShowAnalysisForm(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-700 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
         >
           + Video Analizi Yap
         </button>
@@ -301,7 +301,7 @@ export default function VideosPage() {
           <p className="text-zinc-500 text-sm mb-4">Sonuç bulunamadı</p>
           <button
             onClick={() => setShowAnalysisForm(true)}
-            className="px-4 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
           >
             İlk Video Analizini Yap
           </button>
