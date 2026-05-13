@@ -8,7 +8,8 @@
 2c. ✅ **[T-02] · complete-analysis tamir** — TAMAMLANDI: `let profile` deklare edildi, hatalı `scrapeCompetitors` named import kaldırıldı, `extractCompetitorUsernames` + `scrapeCompetitorsWithFallback` method'ları scraper class'ına eklendi
 2d. ✅ **[T-03] · competitor-analysis tip uyumu** — TAMAMLANDI: `CompetitorData.error?` ve `CompetitorProfile.recent_posts.recent_posts_count?` + `engagement_rate?` opsiyonel yapıldı
 2e. ✅ **[T-04] · video-analysis funnel_stage tip** — TAMAMLANDI: Zod enum 4 değere düşürüldü ('cold' | 'warm' | 'hot' | 'sale')
-3. **[F-01] · Director AI** — FAZ 2 — GPT-4o Vision sinematik analiz, scene_director/script_rewrite/full_rewrite
+3. ✅ **[F-01] · Director AI scaffold** — Plan 04A TAMAMLANDI (commit 7c6cd60) — ffmpeg, videoPreprocessor, cinematicDirector, directorAI orkestratör (Groq → OpenAI fallback), `/api/director` endpoint
+3b. **[F-01 KALAN]** — Plan 04B/C/D bekliyor: TTS endpoint, yt-dlp download endpoint, video-analysis route'una sinematik entegrasyon, Director UI paneli
 4. **[F-02] · FrameAgent** — FAZ 3 — Claude chat asistanı, skill sistemi, auto-analysis
 5. **[M-01] · Supabase Migration** — FAZ 4 — cinematic_analysis sütunu, agent_analyses tablosu
 6. **[T-01] · Sidebar hardcoded istatistikler** — Gerçek Supabase sorgusu
