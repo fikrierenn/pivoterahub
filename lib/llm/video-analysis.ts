@@ -27,7 +27,7 @@ export const VideoAnalysisSchema = z.object({
   visual_analysis: z.string().describe('Gorsel analiz metni (STRING)').default('Gorsel analiz yapilamadi'),
 
   funnel_stage: z
-    .enum(['cold', 'warm', 'hot', 'sale', 'middle', 'retention'])
+    .enum(['cold', 'warm', 'hot', 'sale'])
     .default('cold'),
 
   marketing_power: z.object({

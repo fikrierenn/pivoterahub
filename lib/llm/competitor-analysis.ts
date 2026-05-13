@@ -41,8 +41,8 @@ export interface CompetitorProfile {
       video_ratio: number;
       photo_ratio: number;
     };
-    recent_posts_count: number;
-    engagement_rate: number;
+    recent_posts_count?: number;
+    engagement_rate?: number;
   };
 }
 

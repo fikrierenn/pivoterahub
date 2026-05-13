@@ -11,6 +11,8 @@ export interface CompetitorData {
   is_verified: boolean;
   is_private: boolean;
   engagement_rate?: number;
+  /** Scrape başarısızsa Python tarafından doldurulur. Varsa diğer alanlar default değerlerde. */
+  error?: string;
   recent_posts?: {
     avg_likes: number;
     avg_comments: number;
@@ -85,5 +87,50 @@ export class CompetitorScraper {
         reject(new Error('Zaman aşımı (Timeout)'));
       }, 300000);
     });
+  }
+
+  /**
+   * Virgül, satır sonu veya boşluk ile ayrılmış rakip listesini username dizisine çevirir.
+   * Instagram URL'lerinden (`instagram.com/foo` veya `@foo`) sadece username'i çıkarır.
+   */
+  extractCompetitorUsernames(input: string): string[] {
+    if (!input) return [];
+    return input
+      .split(/[\s,;\n]+/)
+      .map((raw) => raw.trim())
+      .filter(Boolean)
+      .map((raw) => {
+        // URL ise son segmenti al
+        const urlMatch = raw.match(/instagram\.com\/([^/?#]+)/i);
+        if (urlMatch) return urlMatch[1];
+        // @username veya plain
+        return raw.replace(/^@/, '');
+      })
+      .filter((u) => u && !u.includes('/'))
+      .slice(0, 10); // güvenlik üst sınırı
+  }
+
+  /**
+   * scrapeCompetitors başarısız olursa minimal mock data ile devam eder.
+   * Production'a geçildiğinde mock kısmı kaldırılacak — şu an Instagram rate limit
+   * nedeniyle CI ve dev'de scrape sürekli fail oluyor.
+   */
+  async scrapeCompetitorsWithFallback(usernames: string[]): Promise<CompetitorScrapingResult> {
+    try {
+      return await this.scrapeCompetitors(usernames);
+    } catch (err) {
+      console.warn('[CompetitorScraper] gerçek scrape başarısız, mock fallback:', err);
+      const competitors: CompetitorData[] = usernames.map((u) => ({
+        username: u,
+        followers: 0,
+        following: 0,
+        posts: 0,
+        bio: '',
+        is_verified: false,
+        is_private: false,
+        error: err instanceof Error ? err.message : 'scrape failed',
+      }));
+      return { competitors, total_scraped: 0, total_failed: usernames.length };
+    }
   }
 }

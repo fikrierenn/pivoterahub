@@ -76,7 +76,7 @@ Musteriye hitap eden profesyonel dille yaz. SADECE JSON dondur.
     strategic_recommendations: validated.strategic_recommendations,
     action_plan: validated.action_plan,
     presentation_html: generatePresentationHTML(validated, clientData),
-    presentation_pdf_url: null,
+    presentation_pdf_url: undefined,
   };
 }
 
